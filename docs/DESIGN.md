@@ -1,7 +1,8 @@
 # Document de conception — Gambit Rogue
 
 > Nom de travail provisoire. Ce document fixe les règles décidées ; toute
-> évolution des règles doit être reportée ici.
+> évolution des règles doit être reportée ici. Les règles marquées ✅ sont
+> implémentées et testées dans `src/engine/`.
 
 ## 1. Concept
 
@@ -28,59 +29,76 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 
 ## 3. Niveaux (mini-problèmes)
 
-### Plateaux
-- Grille avec un **masque de cases** : formes irrégulières (L, trous, îlots…).
+### Plateaux ✅
+- Grille avec des **cases absentes** : formes irrégulières (L, trous, îlots…).
+  Le vide se comporte comme l'eau : on ne s'y arrête pas et on ne le traverse pas
+  en glissant ; le Cavalier peut le sauter.
 - Chaque gabarit définit la **direction « avant »** de chaque camp (pour les pions).
 - Chaque gabarit définit une **zone de déploiement** : le joueur y place ses
-  pièces avant le début du niveau.
+  pièces avant le début du niveau (à implémenter).
 
 ### Génération (hybride)
 - Formes de plateau et gabarits **faits main**.
 - Ennemis et terrains **tirés au hasard** selon un **budget de difficulté**.
-- Tout le hasard passe par un générateur à seed (`src/engine/rng.ts`) : un même
-  seed rejoue le même run.
+- Tout le hasard passe par un générateur à graine (`src/engine/rng.ts`) : une même
+  graine rejoue le même run.
 
-### Terrains
+### Terrains ✅
 | Terrain | Effet |
 |---|---|
-| Forêt / boue | Une pièce qui glisse (Tour, Fou, Dame) **s'arrête** en y entrant. |
-| Eau / gouffre | On ne peut ni s'y arrêter ni la traverser en glissant ; **un saut (Cavalier) passe par-dessus**. |
-| Mur / rocher | Bloque tout, y compris les lignes de vue (éventuellement destructible, avec PV). |
-| Glace | Une pièce qui s'y arrête **glisse d'une case de plus** dans la même direction. |
+| Forêt / boue | Une pièce qui glisse (Tour, Fou, Dame, double pas du Pion) **s'arrête** en y entrant. On peut attaquer une pièce qui s'y trouve, pas au-delà. On en sort librement. |
+| Eau / gouffre | On ne peut ni s'y arrêter ni la traverser en glissant ; le **Cavalier saute par-dessus**. |
+| Mur / rocher | Comme l'eau pour les déplacements (le **Cavalier saute aussi par-dessus**), mais **bloque les lignes de vue** (futurs effets à distance). Éventuellement destructible. |
+| Glace | Une pièce qui s'y arrête après un déplacement **en ligne** (Tour, Fou, Dame, Roi, Pion) **glisse d'une case** dans la même direction, et **recommence tant qu'elle est sur la glace** et que la case suivante est libre. Un **saut** (Cavalier) et un **atterrissage** après une attaque ne font pas glisser. |
 
-### Objectifs
-| Type | Victoire |
-|---|---|
-| Combat | Capturer **toutes** les pièces adverses. |
-| Survie | Tenir **N tours** avec le héros vivant. |
-| Capture | Capturer **une pièce cible** précise (limite de tours possible). |
-| Boss | Vaincre un ennemi à beaucoup de PV (il peut jouer deux fois par tour). |
+### Objectifs ✅
+| Type | Victoire | Précisions |
+|---|---|---|
+| Combat | Capturer **toutes** les pièces adverses. | |
+| Survie | Tenir **N tours** avec le héros vivant. | Un tour est fini quand l'ennemi a joué. Gagné aussi si plus aucun ennemi ne reste. |
+| Capture | Capturer **une pièce cible** précise. | Limite de tours facultative : le joueur dispose alors de N coups. |
+| Boss | Vaincre un ennemi à beaucoup de PV (il peut jouer deux fois par tour). | PV personnalisables ✅ ; double action à implémenter. |
 
 ## 4. Règles de jeu
 
-### Tour
-- Alternance stricte : le joueur déplace **une** pièce, puis l'ennemi (IA) en
-  déplace **une** (un boss peut agir deux fois).
+### Tour ✅
+- Alternance stricte : le joueur commence ; il déplace **une** pièce, puis l'ennemi
+  (IA) en déplace **une** (un boss pourra agir deux fois).
 - **Pas d'échec ni de mat** : le héros a des PV et peut aller sur une case menacée.
+- Un camp **sans aucune action possible passe** son tour. **Deux passes d'affilée**
+  (les deux camps bloqués) = **défaite**, sauf en survie où les tours continuent
+  d'avancer.
 
-### Pièces
+### Pièces ✅
 - **Uniquement les 6 pièces classiques** ; la variété vient des pouvoirs.
-- Chaque pièce a des **PV** et une **ATK** (valeurs par type, modifiables par pouvoirs).
-- **Pion** : avance d'**une case tout droit** (jamais en diagonale pour se déplacer),
-  **deux cases à son premier coup** du niveau ; il **attaque en diagonale vers
-  l'avant**. Pas de prise en passant. Pas de promotion par défaut (peut venir d'un
-  pouvoir).
-- Les autres pièces se déplacent comme aux échecs, sous réserve des terrains.
+- Chaque pièce a des **PV** et une **ATK**. Valeurs de base **provisoires**, à
+  équilibrer (`src/engine/pieces/pieces.ts`) :
 
-### Combat
-- Une attaque inflige **ATK de l'attaquant** en dégâts aux PV de la cible.
-- **Cible tuée** : l'attaquant prend sa case.
+  | Pièce | PV | ATK | Déplacement |
+  |---|---|---|---|
+  | Roi | 4 | 1 | 1 case, 8 directions |
+  | Dame | 3 | 3 | En ligne, 8 directions |
+  | Tour | 3 | 2 | En ligne, orthogonal |
+  | Fou | 2 | 2 | En ligne, diagonal |
+  | Cavalier | 2 | 2 | Saut en L, par-dessus tout |
+  | Pion | 1 | 1 | Voir ci-dessous |
+
+- **Pion** : avance d'**une case tout droit** (jamais en diagonale pour se déplacer),
+  **deux cases à son premier coup** du niveau (ce double pas est une glissade : la
+  forêt l'arrête, la glace ne l'empêche pas) ; il **attaque en diagonale vers
+  l'avant** et jamais tout droit. Pas de prise en passant. Pas de promotion par
+  défaut (peut venir d'un pouvoir).
+
+### Combat ✅
+- Une attaque inflige **l'ATK de l'attaquant** aux PV de la cible.
+- **Cible tuée** : l'attaquant prend sa case (et glisse si c'est de la glace).
 - **Cible survivante** :
-  - pièce qui glisse depuis une distance ≥ 2 : l'attaquant **s'arrête sur la case
+  - attaque **en ligne depuis 2 cases ou plus** : l'attaquant **s'arrête sur la case
     juste avant** la cible ;
-  - attaque **adjacente** ou **saut** (Cavalier) : l'attaquant atterrit sur une
-    **case libre adjacente à la cible, au choix du joueur** (l'IA choisit pour
-    l'ennemi) ; s'il n'y en a aucune, il **reste sur sa case d'origine**.
+  - attaque **adjacente** (Roi, Pion, pièce en ligne collée à sa cible) ou **saut**
+    (Cavalier) : l'attaquant atterrit sur une **case libre voisine de la cible
+    (8 directions)**, **au choix du joueur** (l'IA choisit pour l'ennemi). Sa propre
+    case compte comme libre. S'il n'y en a aucune, il **reste sur sa case**.
 
 ### Exemples de pouvoirs (à équilibrer)
 +1 PV, +1 ATK, +1 de portée, traverser la forêt, bouclier (annule la 1re attaque
@@ -100,28 +118,45 @@ reçue), riposte, saut, promotion du pion.
 | Tests | Vitest (moteur), Playwright plus tard pour l'interface |
 | i18n | i18next + react-i18next, **FR + EN dès le départ** |
 | Sauvegarde | IndexedDB via idb-keyval |
-| Hébergement | GitHub Pages via GitHub Actions (`BASE_PATH=/ChessGame/`) |
+| Hébergement | GitHub Pages via GitHub Actions (déploiement à chaque push sur `main`) |
 
 ### Organisation du code
 ```
 src/
-  engine/    règles pures TS, sans dépendance UI, testées
-    board/   grille, masque, terrains
-    pieces/  définitions data-driven (mouvements, PV, ATK)
-    powers/  pouvoirs = modificateurs
-    combat/  résolution d'attaque, case d'arrivée
-    ai/      IA (Web Worker)
-    goals/   objectifs de niveau
-  run/       carte, récompenses, héros, déblocages
-  content/   gabarits de niveaux, classes de héros, pouvoirs
-  ui/        composants React/SVG
-  i18n/      traductions FR/EN
+  engine/          règles pures TS, sans dépendance UI, déterministes et testées
+    geometry.ts    positions, directions
+    board/         plateau irrégulier, terrains
+    pieces/        définitions des pièces (mouvements, PV, ATK)
+    state.ts       état d'un niveau, création à partir d'une définition
+    moves.ts       actions légales (déplacer, attaquer, passer)
+    combat/        dégâts, case d'arrivée quand la cible survit
+    apply.ts       application d'une action, glace, événements, alternance
+    goals/         objectifs et fin de partie
+    rng.ts         hasard à graine
+    testing.ts     aides pour les tests (plateaux en texte)
+    powers/        (à venir) pouvoirs = modificateurs
+    ai/            (à venir) IA dans un Web Worker
+  run/             (à venir) carte, récompenses, héros, déblocages
+  content/         (à venir) gabarits de niveaux, classes de héros, pouvoirs
+  ui/              (à venir) composants React/SVG
+  i18n/            traductions FR/EN
+```
+
+Les plateaux et les pièces s'écrivent en texte, ce qui rend les niveaux et les
+tests lisibles :
+
+```ts
+testLevel({
+  terrain: ['..f.', '.~..', 'i...'], // . sol, f forêt, ~ eau, # mur, i glace, espace = vide
+  units:   ['R..p', '....', 'K...'], // majuscules = joueur, minuscules = ennemi (K Q R B N P)
+})
 ```
 
 ## 7. Jalon 1 — Prototype jouable
-1. ✅ Projet initialisé (Vite, React, TS, Vitest, PWA, i18n FR/EN, RNG à seed).
-2. Moteur testé : plateau irrégulier, terrains, déplacements des 6 pièces,
-   combat PV/ATK, objectif « capturer tout ».
+1. ✅ Projet initialisé (Vite, React, TS, Vitest, PWA, i18n FR/EN, RNG à graine).
+2. ✅ Moteur testé : plateau irrégulier, terrains, déplacements des 6 pièces,
+   combat PV/ATK, glace, objectifs (capturer tout, survivre, capturer une cible),
+   mort du héros, blocage.
 3. IA simple.
 4. Interface SVG responsive.
 5. 3 à 5 niveaux enchaînés avec choix de récompense, 2 classes de héros.
