@@ -50,6 +50,8 @@ export interface GameState {
   readonly round: number
   /** Passes consécutives des deux camps (deux d'affilée = blocage). */
   readonly consecutivePasses: number
+  /** Actions jouées depuis la dernière attaque (riposte comprise), tous camps confondus. */
+  readonly quietPlies: number
   readonly status: Status
   readonly endReason: EndReason | null
 }
@@ -161,6 +163,7 @@ export function createLevel(def: LevelDefinition): GameState {
     sideToMove: 'player' as const,
     round: 1,
     consecutivePasses: 0,
+    quietPlies: 0,
   }
   const outcome = evaluateOutcome(draft)
   return { ...draft, status: outcome.status, endReason: outcome.reason }

@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { findPiece, type GameState, type Goal, type Piece, type Terrain } from '../../engine'
-import { Board } from '../board/Board'
+import { enemiesCornered } from '../../engine/ai/ai'
+import { Board, PromotionMark } from '../board/Board'
+import { hasPromotionPawn } from '../board/promotion'
 import { PieceGlyph } from '../board/PieceGlyph'
 import { CELL, TerrainTile } from '../board/TerrainTile'
 import { Dialog, type DialogAction } from '../Dialog'
@@ -102,6 +104,7 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
               {ended ? t(`end.${state.status}`) : game.thinking ? t('game.enemyTurn') : t('game.yourTurn')}
             </p>
             {hint && <p className="turn-hint">{hint}</p>}
+            {!ended && enemiesCornered(state) && <p className="turn-alert">{t('game.cornered')}</p>}
             {game.mustPass && (
               <button type="button" className="button-primary" onClick={game.pass}>
                 {t('game.pass')}
@@ -145,6 +148,17 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
                   </span>
                 </li>
               ))}
+              {hasPromotionPawn(state) && (
+                <li>
+                  <svg viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
+                    <TerrainTile pos={{ x: 0, y: 0 }} terrain="floor" />
+                    <PromotionMark pos={{ x: 0, y: 0 }} forward={{ x: 0, y: -1 }} />
+                  </svg>
+                  <span>
+                    <strong>{t('game.promotionLine')}</strong> — {t('game.promotionRule')}
+                  </span>
+                </li>
+              )}
             </ul>
           </details>
 

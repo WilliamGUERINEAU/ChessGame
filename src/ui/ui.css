@@ -903,3 +903,20 @@ button.army-item.is-selected {
   margin: 8px 0;
   font-size: 2rem;
 }
+
+/* ---------- Ligne de promotion et ennemis acculés ---------- */
+
+.mark-promotion rect,
+.mark-promotion path {
+  fill: var(--promotion);
+}
+
+.mark-promotion path {
+  opacity: 0.85;
+}
+
+.turn-alert {
+  margin: 6px 0 0;
+  font-weight: 600;
+  color: var(--danger);
+}

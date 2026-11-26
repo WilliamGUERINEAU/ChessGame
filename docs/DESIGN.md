@@ -140,7 +140,14 @@ Gagnés en récompense (ou portés par le héros dès le départ), conservés to
   millisecondes par coup sur nos plateaux.
 - **Évaluation** : valeur de chaque pièce (type + PV), PV du héros comptés en plus
   (l'ennemi cherche à l'user), bonus pour la cible d'un niveau de capture, et
-  **approche** des ennemis vers le héros.
+  **approche** des ennemis vers le héros. L'approche est un **bonus positif par
+  pièce**, plus grand près du but : une pièce garde toujours de la valeur et une
+  capture rapporte toujours, même loin du héros.
+- **Ennemis acculés** ✅ : quand il ne reste que **2 pièces ennemies ou moins**, ou
+  après **3 tours (6 actions) sans aucune attaque**, leur agressivité passe à au
+  moins 2 : ils cessent de fuir et viennent au contact. Décidé une fois par coup,
+  au début de la recherche. Le panneau l'annonce (« Acculés, les ennemis passent à
+  l'attaque ! »).
 - Une **issue certaine reste départagée par la position** : un ennemi condamné (ex.
   la survie va réussir) continue d'user le héros au lieu de jouer au hasard.
 - **Réglages par niveau** : profondeur (demi-coups anticipés) et **agressivité**
@@ -215,6 +222,11 @@ testLevel({
 - **Sur chaque pièce** : barre de PV (verte pour le joueur, rouge pour l'ennemi),
   pastille d'ATK, couronne pour le héros, viseur pour la cible, écusson bleu tant
   que le Bouclier est actif.
+- **Ligne de promotion** ✅ : dès qu'un Pion du joueur porte Promotion (déploiement
+  et combat), un **liseré violet** sur le bord avant et une **petite couronne**
+  marquent les cases de promotion : la dernière case praticable de chaque colonne
+  (sur un plateau irrégulier, la ligne n'est pas forcément droite). Elle figure
+  aussi dans la légende et dans la description des cases.
 - **Panneau** : tour en cours, consigne, fiche de la pièce choisie (avec ses
   pouvoirs), journal (attaques, ripostes, boucliers, captures, glissades,
   promotions), légende des terrains.
@@ -236,5 +248,7 @@ testLevel({
 ### Ensuite
 - Carte à embranchements et types de nœuds.
 - Déblocages roguelite (désactivables).
-- Équilibrage du run : dans les parties simulées, la plupart des runs échouent au
-  niveau 5 (« Le gardien », temps écoulé). À confirmer par des parties humaines.
+- Équilibrage du run : dans les parties simulées, beaucoup de runs échouent au
+  niveau 5 (« Le gardien », temps écoulé) ; les blocages restants viennent surtout
+  des limites du joueur simulé (il défend au lieu d'attaquer). À confirmer par des
+  parties humaines.

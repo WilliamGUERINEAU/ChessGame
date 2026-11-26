@@ -1,4 +1,4 @@
-import { isStandable, terrainAt, TERRAIN_RULES, type Board } from './board/board'
+import { isLastRow, isStandable, terrainAt, TERRAIN_RULES } from './board/board'
 import { attackDamage, survivedApproach } from './combat/combat'
 import { add, DIRECTION_VECTORS, kingDistance, samePos, stepToward, type Pos, type Vec } from './geometry'
 import { evaluateOutcome, type EndReason } from './goals/goals'
@@ -120,12 +120,14 @@ class TurnBuilder {
 
   finish(passed: boolean): ActionResult {
     const { state } = this
+    const fought = this.events.some((event) => event.type === 'attack' || event.type === 'riposte')
     const draft = {
       ...state,
       pieces: this.pieces,
       sideToMove: opponent(state.sideToMove),
       round: state.sideToMove === 'enemy' ? state.round + 1 : state.round,
       consecutivePasses: passed ? state.consecutivePasses + 1 : 0,
+      quietPlies: fought ? 0 : state.quietPlies + 1,
     }
     const outcome = evaluateOutcome(draft)
     if (outcome.status !== 'ongoing') {
@@ -231,16 +233,4 @@ function iceDirection(piece: Piece, from: Pos, to: Pos): Vec | null {
   if (PIECES[piece.type].movement.kind === 'leap' || hasPower(piece, 'skates')) return null
   if (samePos(from, to)) return null
   return stepToward(from, to)
-}
-
-/** Dernière rangée : plus aucune case du plateau devant la pièce, dans sa colonne. */
-export function isLastRow(board: Board, pos: Pos, forward: Vec): boolean {
-  for (
-    let p = add(pos, forward);
-    p.x >= 0 && p.y >= 0 && p.x < board.width && p.y < board.height;
-    p = add(p, forward)
-  ) {
-    if (terrainAt(board, p) !== null) return false
-  }
-  return true
 }

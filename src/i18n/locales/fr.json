@@ -64,7 +64,10 @@
     "journal": "Journal",
     "journalEmpty": "Rien pour l'instant.",
     "legend": "Terrains",
-    "demoComplete": "Vous avez terminé la démo. Bravo !"
+    "demoComplete": "Vous avez terminé la démo. Bravo !",
+    "cornered": "Acculés, les ennemis passent à l’attaque !",
+    "promotionLine": "Ligne de promotion",
+    "promotionRule": "un Pion avec Promotion qui l’atteint devient une Dame."
   },
   "end": {
     "won": "Victoire !",
@@ -129,7 +132,8 @@
     "attack": "attaque possible",
     "landing": "atterrissage possible",
     "deploy": "case de déploiement",
-    "shield": "bouclier actif"
+    "shield": "bouclier actif",
+    "promotion": "ligne de promotion"
   },
   "classes": {
     "title": "Choisissez votre héros",
@@ -213,6 +217,7 @@
     "wonText": "Vous avez traversé les {{total}} niveaux. Bravo !",
     "levelsCleared": "Niveaux réussis : {{count}} / {{total}}",
     "newRun": "Nouveau run",
-    "menu": "Menu"
+    "menu": "Menu",
+    "promotionHint": "Le liseré violet marque la ligne de promotion de vos Pions."
   }
 }

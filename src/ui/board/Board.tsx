@@ -2,9 +2,11 @@ import { useMemo, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   boardCells,
+  DIRECTION_VECTORS,
   findPiece,
   pieceAt,
   posKey,
+  promotionCells,
   terrainAt,
   type GameState,
   type Piece,
@@ -12,6 +14,7 @@ import {
 } from '../../engine'
 import type { Highlights } from '../game/interaction'
 import { PieceGlyph } from './PieceGlyph'
+import { hasPromotionPawn } from './promotion'
 import { CELL, TerrainTile } from './TerrainTile'
 
 export interface BoardProps {
@@ -47,6 +50,15 @@ export function Board({
   const { board } = state
   const cells = useMemo(() => boardCells(board), [board])
 
+  // Ligne de promotion : seulement si un Pion du joueur porte le pouvoir Promotion.
+  const forward = DIRECTION_VECTORS[state.forward.player]
+  const showPromotion = hasPromotionPawn(state)
+  const promotion = useMemo(
+    () => (showPromotion ? promotionCells(board, forward) : []),
+    [showPromotion, board, forward],
+  )
+  const promotionKeys = new Set(promotion.map(posKey))
+
   const roles = new Map<string, CellRole>()
   for (const p of zone) roles.set(posKey(p), 'deploy')
   for (const p of highlights.moves) roles.set(posKey(p), 'move')
@@ -72,6 +84,7 @@ export function Board({
       )
       if (piece.shieldActive) parts.push(t('a11y.shield'))
     }
+    if (promotionKeys.has(posKey(p))) parts.push(t('a11y.promotion'))
     if (role) parts.push(t(`a11y.${role}`))
     return parts.join(', ')
   }
@@ -98,6 +111,9 @@ export function Board({
       <g className="marks" aria-hidden="true">
         {zone.map((p) => (
           <rect key={`zone-${posKey(p)}`} className="mark-zone" x={p.x * CELL} y={p.y * CELL} width={CELL} height={CELL} />
+        ))}
+        {promotion.map((p) => (
+          <PromotionMark key={`promo-${posKey(p)}`} pos={p} forward={forward} />
         ))}
         {lastMove &&
           [lastMove.from, lastMove.to].map((p, i) => (
@@ -253,6 +269,32 @@ function HpBar({ hp, maxHp }: { hp: number; maxHp: number }) {
           rx="2.5"
         />
       ))}
+    </g>
+  )
+}
+
+/**
+ * Case de la ligne de promotion : un liseré sur le bord avant (côté où le Pion
+ * avance) et une petite couronne près de ce bord.
+ */
+export function PromotionMark({ pos, forward }: { pos: Pos; forward: Pos }) {
+  const x = pos.x * CELL
+  const y = pos.y * CELL
+  const thickness = 7
+  const edge =
+    forward.y < 0
+      ? { x, y, width: CELL, height: thickness }
+      : forward.y > 0
+        ? { x, y: y + CELL - thickness, width: CELL, height: thickness }
+        : forward.x < 0
+          ? { x, y, width: thickness, height: CELL }
+          : { x: x + CELL - thickness, y, width: thickness, height: CELL }
+  const cx = x + CELL / 2 + forward.x * 30
+  const cy = y + CELL / 2 + forward.y * 30
+  return (
+    <g className="mark-promotion">
+      <rect {...edge} />
+      <path transform={`translate(${cx} ${cy})`} d="M-10 6 L-11 -6 L-5 -1 L0 -9 L5 -1 L11 -6 L10 6 Z" />
     </g>
   )
 }

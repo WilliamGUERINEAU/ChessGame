@@ -2,13 +2,15 @@
  * Moteur de règles : TypeScript pur, sans dépendance à l'interface.
  * Toutes les fonctions sont déterministes et ne modifient jamais leurs entrées.
  */
-export { applyAction, IllegalActionError, isLastRow, type ActionResult, type GameEvent } from './apply'
+export { applyAction, IllegalActionError, type ActionResult, type GameEvent } from './apply'
 export {
   boardCells,
   boardToAscii,
+  isLastRow,
   isOnBoard,
   isStandable,
   parseBoard,
+  promotionCells,
   terrainAt,
   TERRAIN_RULES,
   type Board,

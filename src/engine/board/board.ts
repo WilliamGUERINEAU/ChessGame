@@ -108,3 +108,23 @@ export function boardCells(board: Board): Pos[] {
   }
   return out
 }
+
+/** Dernière rangée : plus aucune case du plateau devant `pos`, dans sa colonne (sens `forward`). */
+export function isLastRow(board: Board, pos: Pos, forward: Pos): boolean {
+  for (
+    let p = { x: pos.x + forward.x, y: pos.y + forward.y };
+    p.x >= 0 && p.y >= 0 && p.x < board.width && p.y < board.height;
+    p = { x: p.x + forward.x, y: p.y + forward.y }
+  ) {
+    if (terrainAt(board, p) !== null) return false
+  }
+  return true
+}
+
+/**
+ * Ligne de promotion d'un camp : les cases praticables de la dernière rangée,
+ * colonne par colonne. Sur un plateau irrégulier, elle n'est pas forcément droite.
+ */
+export function promotionCells(board: Board, forward: Pos): Pos[] {
+  return boardCells(board).filter((p) => isStandable(board, p) && isLastRow(board, p, forward))
+}

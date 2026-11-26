@@ -20,6 +20,25 @@ export interface AiOptions {
 export const DEFAULT_AI_DEPTH = 2
 export const DEFAULT_AGGRESSION = 0.1
 
+/**
+ * Ennemis acculés : quand il ne leur reste que peu de pièces, ou après plusieurs
+ * tours sans combat, ils cessent de fuir et viennent au contact (agressivité renforcée).
+ */
+export const CORNERED_MAX_PIECES = 2
+/** Actions sans attaque, tous camps confondus, avant que les ennemis passent à l'attaque (3 tours). */
+export const CORNERED_QUIET_PLIES = 6
+export const CORNERED_AGGRESSION = 2
+
+export function enemiesCornered(state: Pick<GameState, 'pieces' | 'quietPlies'>): boolean {
+  const enemies = state.pieces.filter((piece) => piece.side === 'enemy').length
+  return enemies <= CORNERED_MAX_PIECES || state.quietPlies >= CORNERED_QUIET_PLIES
+}
+
+/** Agressivité effective, décidée une fois pour toute la recherche à partir de la position actuelle. */
+export function effectiveAggression(state: Pick<GameState, 'pieces' | 'quietPlies'>, base: number): number {
+  return enemiesCornered(state) ? Math.max(base, CORNERED_AGGRESSION) : base
+}
+
 /** Valeur d'une pièce par type, hors PV. */
 const TYPE_VALUE: Readonly<Record<PieceType, number>> = {
   king: 4,
@@ -73,7 +92,9 @@ export interface RankedAction {
 /** Toutes les actions légales, de la meilleure à la moins bonne selon l'IA. */
 export function rankActions(state: GameState, options: AiOptions = {}): RankedAction[] {
   const depth = Math.max(1, options.depth ?? DEFAULT_AI_DEPTH)
-  const weights: Weights = { enemyApproach: options.aggression ?? DEFAULT_AGGRESSION }
+  const weights: Weights = {
+    enemyApproach: effectiveAggression(state, options.aggression ?? DEFAULT_AGGRESSION),
+  }
   const actions = orderActions(legalActions(state))
   if (actions.length <= 1) return actions.map((action) => ({ action, score: 0 }))
   const ranked = actions.map((action) => ({
@@ -147,12 +168,16 @@ function positionForEnemy(state: GameState, weights: Weights): number {
 
   // L'ennemi converge vers le héros (sauf la cible, qui se garde) ;
   // les pièces du joueur (hors héros) vers leur objectif.
+  // L'approche est un bonus positif, plus grand près du but : une pièce garde
+  // toujours de la valeur, et une capture rapporte toujours (sinon, perdre une
+  // pièce lointaine « améliorerait » la position de son camp).
+  const reach = Math.max(state.board.width, state.board.height)
   for (const piece of state.pieces) {
     if (piece.side === 'enemy' && hero && piece.id !== targetId) {
-      score -= weights.enemyApproach * kingDistance(piece.pos, hero.pos)
+      score += weights.enemyApproach * (reach - kingDistance(piece.pos, hero.pos))
     } else if (piece.side === 'player' && piece.id !== state.heroId && objectives.length > 0) {
       const nearest = Math.min(...objectives.map((o) => kingDistance(piece.pos, o.pos)))
-      score += PLAYER_APPROACH * nearest
+      score -= PLAYER_APPROACH * (reach - nearest)
     }
   }
   return score

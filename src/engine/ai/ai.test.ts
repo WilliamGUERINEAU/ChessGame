@@ -4,7 +4,15 @@ import { legalActions, sameAction, type Action } from '../moves'
 import { createRng } from '../rng'
 import type { GameState } from '../state'
 import { idAt, testLevel, where } from '../testing'
-import { chooseAction } from './ai'
+import { kingDistance } from '../geometry'
+import { findPiece } from '../state'
+import {
+  chooseAction,
+  CORNERED_AGGRESSION,
+  CORNERED_QUIET_PLIES,
+  effectiveAggression,
+  enemiesCornered,
+} from './ai'
 
 /** Fait jouer le joueur puis renvoie l'état où c'est à l'ennemi de choisir. */
 function enemyToMove(state: GameState, playerAction: Action): GameState {
@@ -88,5 +96,61 @@ describe('chooseAction', () => {
     const after = applyAction(state, action).state
     expect(after.status).toBe('won')
     expect(where(after, idAt(state, 0, 0))).toBe('3,0')
+  })
+})
+
+describe('ennemis acculés', () => {
+  it('compte les actions sans combat et repart de zéro à chaque attaque', () => {
+    let state = testLevel({ terrain: ['....', '....', '....'], units: ['...r', 'R...', '...K'], hero: { x: 3, y: 2 } })
+    expect(state.quietPlies).toBe(0)
+    state = applyAction(state, { kind: 'move', pieceId: idAt(state, 3, 2), to: { x: 2, y: 2 } }).state
+    expect(state.quietPlies).toBe(1)
+    state = applyAction(state, { kind: 'move', pieceId: idAt(state, 3, 0), to: { x: 3, y: 1 } }).state
+    expect(state.quietPlies).toBe(2)
+    // La Tour du joueur (0,1) attaque la Tour ennemie (3,1) le long de la rangée.
+    state = applyAction(state, { kind: 'attack', pieceId: idAt(state, 0, 1), target: { x: 3, y: 1 } }).state
+    expect(state.quietPlies).toBe(0)
+  })
+
+  it('acculés : 2 pièces ou moins, ou plusieurs tours sans combat', () => {
+    const three = testLevel({ terrain: ['.....'], units: ['K.ppp'] })
+    expect(enemiesCornered(three)).toBe(false)
+    expect(enemiesCornered({ ...three, quietPlies: CORNERED_QUIET_PLIES })).toBe(true)
+    const two = testLevel({ terrain: ['....'], units: ['K.pp'] })
+    expect(enemiesCornered(two)).toBe(true)
+  })
+
+  it('l’agressivité n’est renforcée que pour des ennemis acculés', () => {
+    const three = testLevel({ terrain: ['.....'], units: ['K.ppp'] })
+    expect(effectiveAggression(three, 0.5)).toBe(0.5)
+    expect(effectiveAggression({ ...three, quietPlies: CORNERED_QUIET_PLIES }, 0.5)).toBe(CORNERED_AGGRESSION)
+    expect(effectiveAggression({ ...three, quietPlies: CORNERED_QUIET_PLIES }, 5)).toBe(5)
+  })
+
+  it('un ennemi isolé vient au contact au lieu de rester au loin', () => {
+    // Dame ennemie seule en (5,0), héros en (0,5) : sans le renfort (agressivité 0),
+    // tous les coups calmes se valent et elle resterait à distance.
+    let state = testLevel({
+      terrain: ['......', '......', '......', '......', '......', '......'],
+      units: ['.....q', '', '', '', '', 'K.....'],
+    })
+    state = applyAction(state, { kind: 'move', pieceId: idAt(state, 0, 5), to: { x: 0, y: 4 } }).state
+    const hero = findPiece(state, state.heroId)
+    const queen = idAt(state, 5, 0)
+    const before = kingDistance(findPiece(state, queen)!.pos, hero!.pos)
+    const after = applyAction(state, chooseAction(state, { aggression: 0 })).state
+    const queenAfter = findPiece(after, queen)
+    expect(queenAfter && kingDistance(queenAfter.pos, findPiece(after, after.heroId)!.pos)).toBeLessThan(before)
+  })
+
+  it('capturer une pièce ennemie loin du héros reste intéressant', () => {
+    // Deux ennemis (donc acculés) : la Tour du joueur ne peut prendre que le Pion isolé
+    // en (5,0), loin du héros (0,5). Avec l'ancienne évaluation, elle s'en abstenait.
+    const state = testLevel({
+      terrain: ['......', '......', '......', '......', '......', '......'],
+      units: ['....Rp', '', 'n.....', '', '', 'K.....'],
+      hero: { x: 0, y: 5 },
+    })
+    expect(chooseAction(state)).toMatchObject({ kind: 'attack', target: { x: 5, y: 0 } })
   })
 })

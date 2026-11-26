@@ -64,7 +64,10 @@
     "journal": "Log",
     "journalEmpty": "Nothing yet.",
     "legend": "Terrain",
-    "demoComplete": "You finished the demo. Well done!"
+    "demoComplete": "You finished the demo. Well done!",
+    "cornered": "Cornered, the enemies go on the attack!",
+    "promotionLine": "Promotion line",
+    "promotionRule": "a pawn with Promotion that reaches it becomes a queen."
   },
   "end": {
     "won": "Victory!",
@@ -129,7 +132,8 @@
     "attack": "can attack",
     "landing": "can land here",
     "deploy": "deployment square",
-    "shield": "shield up"
+    "shield": "shield up",
+    "promotion": "promotion line"
   },
   "classes": {
     "title": "Choose your hero",
@@ -213,6 +217,7 @@
     "wonText": "You made it through all {{total}} levels. Well done!",
     "levelsCleared": "Levels cleared: {{count}} / {{total}}",
     "newRun": "New run",
-    "menu": "Menu"
+    "menu": "Menu",
+    "promotionHint": "The purple edge marks your pawns’ promotion line."
   }
 }

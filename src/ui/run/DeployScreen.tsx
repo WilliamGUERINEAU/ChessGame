@@ -5,6 +5,7 @@ import type { LevelContent } from '../../content/levels'
 import { autoDeploy, battleDefinition, movePlacement, playerForward, type Placement } from '../../run/deploy'
 import { MAX_ARMY, type RunState } from '../../run/run'
 import { Board } from '../board/Board'
+import { hasPromotionPawn } from '../board/promotion'
 import { ArmyList } from './ArmyList'
 
 export interface DeployScreenProps {
@@ -72,6 +73,7 @@ export function DeployScreen({ level, run, placement, onPlacementChange, onStart
           <section className="turn" aria-live="polite">
             <p className="turn-status">{t('run.deployTitle')}</p>
             <p className="turn-hint">{selectedId ? t('run.deployMove') : t('run.deployHint')}</p>
+            {hasPromotionPawn(preview) && <p className="turn-hint">{t('run.promotionHint')}</p>}
             <button type="button" className="button-primary" onClick={onStart}>
               {t('run.start')}
             </button>

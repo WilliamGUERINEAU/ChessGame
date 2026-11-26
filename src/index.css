@@ -45,6 +45,7 @@
   --mark-landing-fill: rgba(47, 111, 214, 0.22);
   --mark-selected: #f0b429;
   --mark-last: rgba(240, 180, 41, 0.3);
+  --promotion: #7c3aed;
 
   color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -79,6 +80,7 @@
     --mark-move: rgba(20, 24, 33, 0.45);
     --mark-landing-fill: rgba(122, 167, 255, 0.28);
     --mark-landing: #1f5bc4;
+    --promotion: #a78bfa;
 
     color-scheme: dark;
   }

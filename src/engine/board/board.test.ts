@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { pos } from '../geometry'
-import { boardCells, boardToAscii, isOnBoard, isStandable, parseBoard, terrainAt } from './board'
+import { pos, posKey } from '../geometry'
+import { boardCells, boardToAscii, isOnBoard, isStandable, parseBoard, promotionCells, terrainAt } from './board'
 
 describe('parseBoard', () => {
   const lShape = parseBoard([
@@ -68,5 +68,31 @@ describe('isStandable', () => {
     expect(isStandable(board, pos(2, 0))).toBe(false)
     expect(isStandable(board, pos(3, 0))).toBe(false)
     expect(isStandable(board, pos(5, 0))).toBe(false)
+  })
+})
+
+describe('promotionCells', () => {
+  const up = { x: 0, y: -1 }
+
+  it('suit la forme du plateau : sur un plateau en L, la ligne descend dans le bras droit', () => {
+    const bend = parseBoard(['.....   ', '.f...   ', '.....   ', '...f....', '........', '...~....'])
+    expect(promotionCells(bend, up).map(posKey).sort()).toEqual(
+      ['0,0', '1,0', '2,0', '3,0', '4,0', '5,3', '6,3', '7,3'].sort(),
+    )
+  })
+
+  it('un trou au milieu d’une colonne ne crée pas de ligne de promotion', () => {
+    const holed = parseBoard(['...', '. .', '...'])
+    expect(promotionCells(holed, up).map(posKey).sort()).toEqual(['0,0', '1,0', '2,0'])
+  })
+
+  it('une case d’eau en bout de colonne n’est pas une case de promotion, ni celle d’avant', () => {
+    const water = parseBoard(['.~.', '...'])
+    expect(promotionCells(water, up).map(posKey).sort()).toEqual(['0,0', '2,0'])
+  })
+
+  it('dépend de la direction « avant »', () => {
+    const square = parseBoard(['..', '..'])
+    expect(promotionCells(square, { x: 1, y: 0 }).map(posKey).sort()).toEqual(['1,0', '1,1'])
   })
 })
