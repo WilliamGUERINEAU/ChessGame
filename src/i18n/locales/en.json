@@ -5,10 +5,109 @@
   },
   "menu": {
     "newRun": "New run",
-    "continue": "Continue",
-    "comingSoon": "Coming soon"
+    "chooseLevel": "Choose a level",
+    "back": "Back",
+    "demoNotice": "Demo: five handmade levels, no rewards yet."
   },
   "settings": {
     "language": "Language"
+  },
+  "levels": {
+    "title": "Levels",
+    "number": "Level {{number}}",
+    "first-steps": {
+      "name": "First steps",
+      "description": "Two pawns and a bishop. Learn to move your pieces and attack."
+    },
+    "the-bend": {
+      "name": "The bend",
+      "description": "An L-shaped board. Forests stop sliding pieces."
+    },
+    "frozen-lake": {
+      "name": "Frozen lake",
+      "description": "Ice makes your pieces slide; water can only be jumped over."
+    },
+    "hold-the-line": {
+      "name": "Hold the line",
+      "description": "An army is closing in. Keep your king alive for 6 rounds."
+    },
+    "the-warden": {
+      "name": "The warden",
+      "description": "Take down the warden rook (5 HP) before the end of round 12."
+    }
+  },
+  "goal": {
+    "eliminate": "Capture every enemy piece",
+    "survive": "Survive {{rounds}} rounds",
+    "capture": "Capture the target",
+    "captureLimited": "Capture the target within {{rounds}} rounds"
+  },
+  "game": {
+    "round": "Round {{round}}",
+    "roundOf": "Round {{round}} / {{total}}",
+    "yourTurn": "Your turn",
+    "enemyTurn": "The enemy is thinking…",
+    "selectPiece": "Tap one of your pieces.",
+    "chooseTarget": "Tap a highlighted square, or another piece.",
+    "chooseLanding": "The target survives: choose where to land.",
+    "noMoves": "None of your pieces can act.",
+    "pass": "Pass the turn",
+    "hero": "Hero",
+    "target": "Target",
+    "hp": "HP",
+    "atk": "ATK",
+    "restart": "Restart",
+    "menu": "Menu",
+    "next": "Next level",
+    "levels": "Levels",
+    "journal": "Log",
+    "journalEmpty": "Nothing yet.",
+    "legend": "Terrain",
+    "demoComplete": "You finished the demo. Well done!"
+  },
+  "end": {
+    "won": "Victory!",
+    "lost": "Defeat",
+    "reason": {
+      "allEliminated": "Every enemy piece has fallen.",
+      "survived": "You held out to the end.",
+      "targetCaptured": "The target has fallen.",
+      "heroDied": "Your hero has fallen.",
+      "timeUp": "Time is up.",
+      "stalemate": "Nobody can move anymore."
+    }
+  },
+  "pieces": {
+    "king": "King",
+    "queen": "Queen",
+    "rook": "Rook",
+    "bishop": "Bishop",
+    "knight": "Knight",
+    "pawn": "Pawn"
+  },
+  "sides": {
+    "player": "you",
+    "enemy": "enemy"
+  },
+  "terrain": {
+    "floor": { "name": "Floor", "rule": "No effect." },
+    "forest": { "name": "Forest", "rule": "Stops sliding pieces." },
+    "water": { "name": "Water", "rule": "Impassable, except by jumping." },
+    "wall": { "name": "Wall", "rule": "Impassable, except by jumping." },
+    "ice": { "name": "Ice", "rule": "A piece that stops on it keeps sliding." }
+  },
+  "log": {
+    "attack": "{{attacker}} → {{target}}: −{{damage}} HP",
+    "capture": "Captured: {{target}}",
+    "iceSlide": "Slides: {{piece}}",
+    "pass": "Turn passed ({{side}})"
+  },
+  "a11y": {
+    "board": "Game board",
+    "cell": "Square {{coord}}, {{terrain}}",
+    "piece": "{{piece}} ({{side}}), {{hp}} of {{maxHp}} HP, {{atk}} ATK",
+    "move": "can move here",
+    "attack": "can attack",
+    "landing": "can land here"
   }
 }

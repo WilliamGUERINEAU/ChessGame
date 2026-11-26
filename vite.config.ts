@@ -8,6 +8,8 @@ const base = process.env.BASE_PATH ?? '/'
 
 export default defineConfig({
   base,
+  // Le worker de l'IA est un module ES (new Worker(..., { type: 'module' })).
+  worker: { format: 'es' },
   plugins: [
     react(),
     VitePWA({

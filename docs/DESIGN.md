@@ -104,9 +104,22 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 +1 PV, +1 ATK, +1 de portée, traverser la forêt, bouclier (annule la 1re attaque
 reçue), riposte, saut, promotion du pion.
 
-## 5. IA ennemie
-- Minimax / alpha-bêta de profondeur 2–3, exécuté dans un **Web Worker**.
-- Difficulté croissante au fil des actes (profondeur, heuristiques).
+## 5. IA ennemie ✅
+- Recherche **minimax avec élagage alpha-bêta** (`src/engine/ai/`), calculée dans un
+  **Web Worker** (repli automatique sur le fil principal si besoin). Quelques
+  millisecondes par coup sur nos plateaux.
+- **Évaluation** : valeur de chaque pièce (type + PV), PV du héros comptés en plus
+  (l'ennemi cherche à l'user), bonus pour la cible d'un niveau de capture, et
+  **approche** des ennemis vers le héros.
+- Une **issue certaine reste départagée par la position** : un ennemi condamné (ex.
+  la survie va réussir) continue d'user le héros au lieu de jouer au hasard.
+- **Réglages par niveau** : profondeur (demi-coups anticipés) et **agressivité**
+  (poids de l'approche ; 0,5 par défaut). Trop prudente, l'IA fuit et la fin de
+  partie tourne à la course-poursuite ; trop agressive, elle se sacrifie.
+- Les égalités sont départagées par le générateur à graine.
+- Difficulté croissante : profondeur 1 au niveau 1, 2 au niveau 2, 3 ensuite.
+  Ces réglages ont été choisis d'après des parties IA contre IA ; un test vérifie
+  que chaque niveau reste gagnable par un joueur simulé.
 
 ## 6. Technique
 
@@ -115,7 +128,7 @@ reçue), riposte, saut, promotion du pion.
 | Langage / build | TypeScript strict, Vite |
 | Interface | React + SVG (vectoriel épuré), responsive mobile/bureau |
 | PWA | vite-plugin-pwa (manifest, service worker, hors ligne) |
-| Tests | Vitest (moteur), Playwright plus tard pour l'interface |
+| Tests | Vitest (moteur, IA, niveaux, logique d'interface) ; parcours complets vérifiés dans Chromium avec Playwright (pas encore automatisés en CI) |
 | i18n | i18next + react-i18next, **FR + EN dès le départ** |
 | Sauvegarde | IndexedDB via idb-keyval |
 | Hébergement | GitHub Pages via GitHub Actions (déploiement à chaque push sur `main`) |
@@ -134,11 +147,14 @@ src/
     goals/         objectifs et fin de partie
     rng.ts         hasard à graine
     testing.ts     aides pour les tests (plateaux en texte)
+    ai/            IA (minimax alpha-bêta) et son Web Worker
     powers/        (à venir) pouvoirs = modificateurs
-    ai/            (à venir) IA dans un Web Worker
+  content/         niveaux de démonstration (gabarits, classes et pouvoirs à venir)
   run/             (à venir) carte, récompenses, héros, déblocages
-  content/         (à venir) gabarits de niveaux, classes de héros, pouvoirs
-  ui/              (à venir) composants React/SVG
+  ui/              interface React/SVG
+    board/         plateau, terrains, pièces vectorielles
+    game/          déroulement d'un niveau (clics, tour de l'IA, journal)
+    screens/       accueil, choix du niveau, partie, fin de niveau
   i18n/            traductions FR/EN
 ```
 
@@ -152,12 +168,28 @@ testLevel({
 })
 ```
 
-## 7. Jalon 1 — Prototype jouable
+## 7. Interface ✅
+- **Écrans** : accueil (langue), choix du niveau, partie, fenêtre de fin
+  (niveau suivant, recommencer, retour aux niveaux).
+- **Jouer** : toucher une de ses pièces affiche ses options : **point** = case où
+  aller, **cadre rouge** = pièce à attaquer, **cadre bleu pointillé** = case
+  d'atterrissage à choisir quand la cible survit. Toucher la pièce à nouveau
+  l'annule ; toucher une autre pièce la sélectionne.
+- **Sur chaque pièce** : barre de PV (verte pour le joueur, rouge pour l'ennemi),
+  pastille d'ATK, couronne pour le héros, viseur pour la cible.
+- **Panneau** : tour en cours, consigne, fiche de la pièce choisie, journal des
+  attaques, captures et glissades, légende des terrains.
+- Le dernier déplacement est surligné ; une pièce touchée clignote en rouge.
+- Accessible au clavier (cases actives focalisables, Entrée/Espace) et aux
+  lecteurs d'écran (chaque case est décrite). Mouvements réduits respectés.
+
+## 8. Jalon 1 — Prototype jouable
 1. ✅ Projet initialisé (Vite, React, TS, Vitest, PWA, i18n FR/EN, RNG à graine).
 2. ✅ Moteur testé : plateau irrégulier, terrains, déplacements des 6 pièces,
    combat PV/ATK, glace, objectifs (capturer tout, survivre, capturer une cible),
    mort du héros, blocage.
-3. IA simple.
-4. Interface SVG responsive.
-5. 3 à 5 niveaux enchaînés avec choix de récompense, 2 classes de héros.
+3. ✅ IA (minimax alpha-bêta dans un Web Worker, réglable par niveau).
+4. ✅ Interface SVG responsive, FR/EN, clair/sombre.
+5. ◐ 5 niveaux de démonstration enchaînés. Reste : choix de récompense entre
+   les niveaux, 2 classes de héros, carte à embranchements.
 6. Sauvegarde locale (IndexedDB).

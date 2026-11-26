@@ -5,10 +5,109 @@
   },
   "menu": {
     "newRun": "Nouvelle partie",
-    "continue": "Continuer",
-    "comingSoon": "Bientôt disponible"
+    "chooseLevel": "Choisir un niveau",
+    "back": "Retour",
+    "demoNotice": "Démo : cinq niveaux faits main, sans récompenses pour l'instant."
   },
   "settings": {
     "language": "Langue"
+  },
+  "levels": {
+    "title": "Niveaux",
+    "number": "Niveau {{number}}",
+    "first-steps": {
+      "name": "Premiers pas",
+      "description": "Deux pions et un Fou. Apprenez à déplacer vos pièces et à attaquer."
+    },
+    "the-bend": {
+      "name": "Le coude",
+      "description": "Un plateau en L. La forêt arrête les pièces qui glissent."
+    },
+    "frozen-lake": {
+      "name": "Lac gelé",
+      "description": "La glace fait glisser vos pièces ; l'eau ne se franchit qu'en sautant."
+    },
+    "hold-the-line": {
+      "name": "Tenir la ligne",
+      "description": "Une armée fond sur vous. Gardez votre Roi en vie pendant 6 tours."
+    },
+    "the-warden": {
+      "name": "Le gardien",
+      "description": "Abattez la Tour gardienne (5 PV) avant la fin du 12ᵉ tour."
+    }
+  },
+  "goal": {
+    "eliminate": "Capturez toutes les pièces ennemies",
+    "survive": "Survivez {{rounds}} tours",
+    "capture": "Capturez la cible",
+    "captureLimited": "Capturez la cible en {{rounds}} tours"
+  },
+  "game": {
+    "round": "Tour {{round}}",
+    "roundOf": "Tour {{round}} / {{total}}",
+    "yourTurn": "À vous de jouer",
+    "enemyTurn": "L'ennemi réfléchit…",
+    "selectPiece": "Touchez une de vos pièces.",
+    "chooseTarget": "Touchez une case en surbrillance, ou une autre pièce.",
+    "chooseLanding": "La cible survit : choisissez où atterrir.",
+    "noMoves": "Aucune de vos pièces ne peut agir.",
+    "pass": "Passer le tour",
+    "hero": "Héros",
+    "target": "Cible",
+    "hp": "PV",
+    "atk": "ATK",
+    "restart": "Recommencer",
+    "menu": "Menu",
+    "next": "Niveau suivant",
+    "levels": "Niveaux",
+    "journal": "Journal",
+    "journalEmpty": "Rien pour l'instant.",
+    "legend": "Terrains",
+    "demoComplete": "Vous avez terminé la démo. Bravo !"
+  },
+  "end": {
+    "won": "Victoire !",
+    "lost": "Défaite",
+    "reason": {
+      "allEliminated": "Toutes les pièces ennemies sont tombées.",
+      "survived": "Vous avez tenu jusqu'au bout.",
+      "targetCaptured": "La cible est tombée.",
+      "heroDied": "Votre héros est tombé.",
+      "timeUp": "Le temps est écoulé.",
+      "stalemate": "Plus personne ne peut jouer."
+    }
+  },
+  "pieces": {
+    "king": "Roi",
+    "queen": "Dame",
+    "rook": "Tour",
+    "bishop": "Fou",
+    "knight": "Cavalier",
+    "pawn": "Pion"
+  },
+  "sides": {
+    "player": "vous",
+    "enemy": "ennemi"
+  },
+  "terrain": {
+    "floor": { "name": "Sol", "rule": "Aucun effet." },
+    "forest": { "name": "Forêt", "rule": "Arrête les pièces qui glissent." },
+    "water": { "name": "Eau", "rule": "Infranchissable, sauf en sautant." },
+    "wall": { "name": "Mur", "rule": "Infranchissable, sauf en sautant." },
+    "ice": { "name": "Glace", "rule": "Une pièce qui s'y arrête glisse encore." }
+  },
+  "log": {
+    "attack": "{{attacker}} → {{target}} : −{{damage}} PV",
+    "capture": "Capture : {{target}}",
+    "iceSlide": "Glissade : {{piece}}",
+    "pass": "Tour passé ({{side}})"
+  },
+  "a11y": {
+    "board": "Plateau de jeu",
+    "cell": "Case {{coord}}, {{terrain}}",
+    "piece": "{{piece}} ({{side}}), {{hp}} sur {{maxHp}} PV, {{atk}} ATK",
+    "move": "déplacement possible",
+    "attack": "attaque possible",
+    "landing": "atterrissage possible"
   }
 }

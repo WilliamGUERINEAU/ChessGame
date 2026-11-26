@@ -43,7 +43,14 @@ export function applyAction(state: GameState, action: Action): ActionResult {
   if (!allowed.some((candidate) => sameAction(candidate, action))) {
     throw new IllegalActionError(`Action illégale : ${JSON.stringify(action)}`)
   }
+  return resolveAction(state, action)
+}
 
+/**
+ * Applique une action **déjà connue comme légale** (issue de `legalActions`), sans la
+ * revalider. Réservé à l'IA, qui explore des milliers d'actions.
+ */
+export function resolveAction(state: GameState, action: Action): ActionResult {
   const turn = new TurnBuilder(state)
   switch (action.kind) {
     case 'pass':

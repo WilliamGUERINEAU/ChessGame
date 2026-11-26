@@ -5,6 +5,13 @@ irréguliers, avec terrains, pièces à PV et pouvoirs gagnés entre les niveaux
 
 Règles et choix de conception : [docs/DESIGN.md](docs/DESIGN.md).
 
+## Jouer
+
+En ligne : <https://williamguerineau.github.io/ChessGame/> (installable comme une
+application, jouable hors ligne). La démo propose cinq niveaux faits main :
+touchez une de vos pièces pour voir où elle peut aller (point), qui elle peut
+attaquer (cadre rouge) et, si la cible survit, où atterrir (cadre bleu).
+
 ## Développement
 
 Prérequis : Node 22+.

@@ -1,15 +1,52 @@
 :root {
+  /* Interface */
   --bg: #f4f1ea;
   --surface: #ffffff;
   --text: #1f2433;
   --text-muted: #5b6275;
-  --border: #d5d0c4;
-  --accent: #c0563b;
+  --border: #d9d3c6;
+  --accent: #b84f34;
   --accent-contrast: #ffffff;
-  --cell-light: #ece3cf;
-  --cell-dark: #8a9a6b;
+  --focus: #2f6fd6;
+  --success: #2f8a4c;
+  --danger: #c23b2f;
 
-  color-scheme: light dark;
+  /* Plateau */
+  --board-light: #efe6d2;
+  --board-dark: #d9c9a7;
+  --forest: #8fae70;
+  --forest-dark: #82a263;
+  --tree: #41612f;
+  --water: #6aa5c8;
+  --wave: #e8f4fb;
+  --wall: #8d919b;
+  --brick: #6c707a;
+  --ice: #d6eef6;
+  --shine: #ffffff;
+
+  /* Pièces */
+  --player-fill: #fbfaf6;
+  --player-stroke: #262b38;
+  --enemy-fill: #343947;
+  --enemy-stroke: #0f1218;
+  --enemy-eye: #e9e4d8;
+  --hp-player: #3f9d5d;
+  --hp-enemy: #d4493d;
+  --hp-empty: rgba(20, 24, 33, 0.2);
+  --atk-player: #262b38;
+  --atk-enemy: #a93a2c;
+  --hero: #f0b429;
+  --hero-stroke: #7a5300;
+
+  /* Repères */
+  --mark-move: rgba(31, 36, 51, 0.38);
+  --mark-attack: #d63c30;
+  --mark-landing: #2f6fd6;
+  --mark-landing-fill: rgba(47, 111, 214, 0.22);
+  --mark-selected: #f0b429;
+  --mark-last: rgba(240, 180, 41, 0.3);
+
+  color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -17,15 +54,33 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1f2433;
-    --surface: #2a3044;
+    --bg: #1b1f2b;
+    --surface: #262b3a;
     --text: #eef0f5;
     --text-muted: #a9b0c2;
-    --border: #3d4560;
+    --border: #3a4258;
     --accent: #e0714f;
-    --accent-contrast: #1f2433;
-    --cell-light: #c9c0a8;
-    --cell-dark: #5f7048;
+    --accent-contrast: #1b1f2b;
+    --focus: #7aa7ff;
+    --success: #5cc47e;
+    --danger: #ff7a6b;
+
+    --board-light: #cfc3a6;
+    --board-dark: #b4a682;
+    --forest: #6f8c55;
+    --forest-dark: #65824b;
+    --tree: #2f4722;
+    --water: #4f86a8;
+    --wave: #cfe7f5;
+    --wall: #6d717c;
+    --brick: #50545e;
+    --ice: #b9dbe6;
+
+    --mark-move: rgba(20, 24, 33, 0.45);
+    --mark-landing-fill: rgba(122, 167, 255, 0.28);
+    --mark-landing: #1f5bc4;
+
+    color-scheme: dark;
   }
 }
 

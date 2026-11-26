@@ -1,0 +1,663 @@
+/* ---------- Boutons et éléments communs ---------- */
+
+button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.button-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.button-ghost {
+  min-height: 40px;
+  padding: 0 4px;
+  background: transparent;
+  color: var(--text);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+/* ---------- Accueil ---------- */
+
+.home {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.home h1 {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 3rem);
+  letter-spacing: 0.02em;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.board-preview {
+  width: min(40vw, 150px);
+  height: auto;
+}
+
+.preview-light {
+  fill: var(--board-light);
+}
+
+.preview-dark {
+  fill: var(--forest);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(100%, 300px);
+  margin-top: 0.5rem;
+}
+
+.language {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+}
+
+.language select {
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  padding: 0 8px;
+}
+
+/* ---------- Choix du niveau ---------- */
+
+.levels {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.levels-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.levels-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.level-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.level-card {
+  width: 100%;
+  min-height: auto;
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 400;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.level-card:hover {
+  border-color: var(--accent);
+}
+
+.level-card-number {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.level-card-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.level-card-goal {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ---------- Partie ---------- */
+
+.game {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 8px 16px 24px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.game-heading {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.game-heading h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.game-level {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.game-round {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.game-goal {
+  margin: 8px 0 12px;
+  padding: 8px 12px;
+  text-align: center;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.game-body {
+  display: grid;
+  gap: 16px;
+}
+
+.board-area {
+  display: flex;
+  justify-content: center;
+}
+
+.board {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 60dvh;
+  border-radius: 10px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 860px) {
+  .game-body {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+
+  .board {
+    max-height: calc(100dvh - 170px);
+  }
+}
+
+.game-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-panel h2 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.turn,
+.piece-card,
+.journal,
+.legend {
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.turn {
+  border-left: 5px solid var(--hp-player);
+}
+
+.turn--enemy {
+  border-left-color: var(--mark-attack);
+}
+
+.turn--won {
+  border-left-color: var(--success);
+}
+
+.turn--lost {
+  border-left-color: var(--danger);
+}
+
+.turn-status {
+  margin: 0;
+  font-weight: 700;
+}
+
+.turn-hint {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.turn button {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.piece-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.piece-card p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.piece-card-glyph {
+  width: 48px;
+  height: 48px;
+  flex: none;
+}
+
+.tag {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+
+.tag-hero {
+  background: var(--hero);
+  color: #3b2a00;
+}
+
+.tag-target {
+  background: var(--mark-attack);
+  color: #fff;
+}
+
+.journal ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+
+.journal p {
+  margin: 0;
+}
+
+.log {
+  padding-left: 8px;
+  border-left: 3px solid var(--hp-player);
+}
+
+.log--enemy {
+  border-left-color: var(--mark-attack);
+}
+
+.legend summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.legend ul {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend svg {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 6px;
+}
+
+/* ---------- Plateau : terrains ---------- */
+
+.tile-floor-light {
+  fill: var(--board-light);
+}
+
+.tile-floor-dark {
+  fill: var(--board-dark);
+}
+
+.tile-forest {
+  fill: var(--forest);
+}
+
+.tile-forest-dark {
+  fill: var(--forest-dark);
+}
+
+.tree path,
+.tree rect {
+  fill: var(--tree);
+}
+
+.tile-water {
+  fill: var(--water);
+}
+
+.wave {
+  fill: none;
+  stroke: var(--wave);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+.tile-wall {
+  fill: var(--wall);
+}
+
+.brick {
+  fill: none;
+  stroke: var(--brick);
+  stroke-width: 3;
+}
+
+.tile-ice {
+  fill: var(--ice);
+}
+
+.shine {
+  fill: none;
+  stroke: var(--shine);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* ---------- Plateau : repères ---------- */
+
+.mark-last {
+  fill: var(--mark-last);
+}
+
+.mark-selected {
+  fill: none;
+  stroke: var(--mark-selected);
+  stroke-width: 6;
+}
+
+.mark-move {
+  fill: var(--mark-move);
+}
+
+.mark-attack {
+  fill: none;
+  stroke: var(--mark-attack);
+  stroke-width: 6;
+}
+
+.mark-landing {
+  fill: var(--mark-landing-fill);
+  stroke: var(--mark-landing);
+  stroke-width: 4;
+  stroke-dasharray: 10 6;
+}
+
+.cell-hit {
+  fill: transparent;
+  outline: none;
+}
+
+.cell-hit.is-actionable {
+  cursor: pointer;
+}
+
+.cell-hit:focus-visible {
+  stroke: var(--focus);
+  stroke-width: 6;
+}
+
+/* ---------- Plateau : pièces ---------- */
+
+.piece {
+  transition: transform 260ms ease;
+}
+
+.glyph > * {
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.piece--player .glyph > * {
+  fill: var(--player-fill);
+  stroke: var(--player-stroke);
+}
+
+.piece--enemy .glyph > * {
+  fill: var(--enemy-fill);
+  stroke: var(--enemy-stroke);
+}
+
+.piece--player .glyph .glyph-line,
+.piece--enemy .glyph .glyph-line {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.piece--enemy .glyph .glyph-line {
+  stroke: var(--enemy-eye);
+}
+
+.piece--player .glyph .glyph-eye {
+  fill: var(--player-stroke);
+  stroke: none;
+}
+
+.piece--enemy .glyph .glyph-eye {
+  fill: var(--enemy-eye);
+  stroke: none;
+}
+
+.badge-atk circle {
+  fill: var(--atk-player);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.piece--enemy .badge-atk circle {
+  fill: var(--atk-enemy);
+}
+
+.badge-atk text,
+.hp-text text {
+  fill: #fff;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.badge-atk text {
+  font-size: 18px;
+}
+
+.hp-text text {
+  font-size: 13px;
+}
+
+.hp-text rect {
+  fill: var(--atk-enemy);
+}
+
+.hp-full {
+  fill: var(--hp-player);
+}
+
+.piece--enemy .hp-full {
+  fill: var(--hp-enemy);
+}
+
+.hp-empty {
+  fill: var(--hp-empty);
+}
+
+.badge-hero {
+  fill: var(--hero);
+  stroke: var(--hero-stroke);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.badge-target circle,
+.badge-target path {
+  fill: none;
+  stroke: var(--mark-attack);
+  stroke-width: 3;
+}
+
+.hit-flash {
+  fill: var(--mark-attack);
+  opacity: 0;
+  animation: hit-flash 650ms ease-out;
+}
+
+@keyframes hit-flash {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece {
+    transition: none;
+  }
+
+  .hit-flash {
+    animation: none;
+  }
+}
+
+/* ---------- Fin de niveau ---------- */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 18, 28, 0.45);
+}
+
+@media (min-width: 600px) {
+  .dialog-backdrop {
+    align-items: center;
+  }
+}
+
+.dialog {
+  width: min(100%, 420px);
+  padding: 20px;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.dialog p {
+  margin: 6px 0 0;
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.dialog-title--won {
+  color: var(--success);
+}
+
+.dialog-title--lost {
+  color: var(--danger);
+}
+
+.dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}

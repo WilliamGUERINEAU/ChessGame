@@ -1,60 +1,51 @@
-import { useTranslation } from 'react-i18next'
-import { SUPPORTED_LANGUAGES, setLanguage, type Language } from './i18n'
-import './App.css'
+import { useEffect, useState } from 'react'
+import { DEMO_LEVELS } from './content/levels'
+import { GameScreen } from './ui/screens/GameScreen'
+import { Home } from './ui/screens/Home'
+import { LevelSelect } from './ui/screens/LevelSelect'
 
-/** Petit plateau en L : aperçu des plateaux irréguliers du jeu. */
-const PREVIEW_CELLS: ReadonlyArray<readonly [number, number]> = [
-  [0, 0], [1, 0],
-  [0, 1], [1, 1],
-  [0, 2], [1, 2], [2, 2], [3, 2],
-  [0, 3], [1, 3], [2, 3], [3, 3],
-]
-
-function BoardPreview() {
-  return (
-    <svg className="board-preview" viewBox="0 0 4 4" aria-hidden="true">
-      {PREVIEW_CELLS.map(([x, y]) => (
-        <rect
-          key={`${x}-${y}`}
-          x={x}
-          y={y}
-          width={1}
-          height={1}
-          className={(x + y) % 2 === 0 ? 'cell-light' : 'cell-dark'}
-        />
-      ))}
-    </svg>
-  )
-}
+type Screen =
+  | { readonly name: 'home' }
+  | { readonly name: 'levels' }
+  | { readonly name: 'game'; readonly index: number; readonly attempt: number }
 
 export default function App() {
-  const { t, i18n } = useTranslation()
+  const [screen, setScreen] = useState<Screen>({ name: 'home' })
 
-  return (
-    <main className="home">
-      <BoardPreview />
-      <h1>{t('app.title')}</h1>
-      <p className="tagline">{t('app.tagline')}</p>
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [screen])
 
-      <nav className="menu">
-        <button type="button" disabled title={t('menu.comingSoon')}>
-          {t('menu.newRun')}
-        </button>
-      </nav>
-
-      <label className="language">
-        {t('settings.language')}
-        <select
-          value={i18n.resolvedLanguage}
-          onChange={(e) => setLanguage(e.target.value as Language)}
-        >
-          {SUPPORTED_LANGUAGES.map((lang) => (
-            <option key={lang} value={lang}>
-              {lang.toUpperCase()}
-            </option>
-          ))}
-        </select>
-      </label>
-    </main>
-  )
+  switch (screen.name) {
+    case 'home':
+      return (
+        <Home
+          onNewRun={() => setScreen({ name: 'game', index: 0, attempt: 0 })}
+          onChooseLevel={() => setScreen({ name: 'levels' })}
+        />
+      )
+    case 'levels':
+      return (
+        <LevelSelect
+          onBack={() => setScreen({ name: 'home' })}
+          onPlay={(index) => setScreen({ name: 'game', index, attempt: 0 })}
+        />
+      )
+    case 'game': {
+      const level = DEMO_LEVELS[screen.index]
+      return (
+        // La clé remonte l'écran à chaque nouvel essai : le niveau repart de zéro.
+        <GameScreen
+          key={`${level.id}-${screen.attempt}`}
+          level={level}
+          levelNumber={screen.index + 1}
+          attempt={screen.attempt}
+          hasNext={screen.index + 1 < DEMO_LEVELS.length}
+          onRestart={() => setScreen({ ...screen, attempt: screen.attempt + 1 })}
+          onNext={() => setScreen({ name: 'game', index: screen.index + 1, attempt: 0 })}
+          onLevels={() => setScreen({ name: 'levels' })}
+        />
+      )
+    }
+  }
 }
