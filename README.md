@@ -23,3 +23,11 @@ Pour servir le jeu depuis un sous-dossier (ex. GitHub Pages) :
 ```bash
 BASE_PATH=/ChessGame/ npm run build
 ```
+
+## Déploiement
+
+Chaque push sur `main` lance `.github/workflows/deploy.yml` : lint, tests, build,
+puis publication sur GitHub Pages (`https://williamguerineau.github.io/ChessGame/`).
+Le workflow peut aussi être lancé à la main (onglet Actions → « Run workflow »).
+
+Réglage requis une fois : **Settings → Pages → Source : GitHub Actions**.
