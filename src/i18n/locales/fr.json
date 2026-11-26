@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "Gambit Rogue",
+    "tagline": "Roguelite d'échecs sur plateaux irréguliers"
+  },
+  "menu": {
+    "newRun": "Nouvelle partie",
+    "continue": "Continuer",
+    "comingSoon": "Bientôt disponible"
+  },
+  "settings": {
+    "language": "Langue"
+  }
+}

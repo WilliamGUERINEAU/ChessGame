@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "Gambit Rogue",
+    "tagline": "A chess roguelite on irregular boards"
+  },
+  "menu": {
+    "newRun": "New run",
+    "continue": "Continue",
+    "comingSoon": "Coming soon"
+  },
+  "settings": {
+    "language": "Language"
+  }
+}
