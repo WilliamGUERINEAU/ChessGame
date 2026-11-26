@@ -2,6 +2,7 @@ import { isStandable, terrainAt, TERRAIN_RULES } from './board/board'
 import { survivedApproach, wouldKill } from './combat/combat'
 import { add, DIRECTION_VECTORS, perpendiculars, samePos, type Pos, type Vec } from './geometry'
 import { PIECES, type Piece } from './pieces/pieces'
+import { hasPower } from './powers/powers'
 import { findPiece, pieceAt, type GameState } from './state'
 
 /**
@@ -78,8 +79,11 @@ interface Reach {
 function reach(state: GameState, piece: Piece): Reach {
   const movement = PIECES[piece.type].movement
   switch (movement.kind) {
-    case 'slide':
-      return slideReach(state, piece, movement.vectors, movement.range)
+    case 'slide': {
+      // Allonge : le Roi va jusqu'à 2 cases.
+      const range = movement.range + (piece.type === 'king' && hasPower(piece, 'reach') ? 1 : 0)
+      return slideReach(state, piece, movement.vectors, range)
+    }
     case 'leap':
       return leapReach(state, piece, movement.vectors)
     case 'pawn':
@@ -90,24 +94,38 @@ function reach(state: GameState, piece: Piece): Reach {
 /**
  * Déplacement en ligne : avance case par case jusqu'à la portée. S'arrête avant
  * le vide, l'eau, un mur ou une pièce (une pièce adverse devient une cible),
- * et juste après être entré dans une forêt.
+ * et juste après être entré dans une forêt (sauf Forestier). Avec Perçage, la
+ * première pièce alliée rencontrée est traversée (on ne peut pas s'arrêter dessus).
  */
 function slideReach(state: GameState, piece: Piece, vectors: readonly Vec[], range: number): Reach {
   const moves: Pos[] = []
   const targets: Piece[] = []
+  const forester = hasPower(piece, 'forester')
+  const piercing = hasPower(piece, 'piercing')
   for (const v of vectors) {
     let current = piece.pos
+    let pierced = false
     for (let step = 1; step <= range; step++) {
       const next = add(current, v)
       const terrain = terrainAt(state.board, next)
       if (terrain === null || !TERRAIN_RULES[terrain].standable) break
+      const stops = TERRAIN_RULES[terrain].stopsSlide && !forester
       const occupant = pieceAt(state, next)
       if (occupant) {
-        if (occupant.side !== piece.side) targets.push(occupant)
+        if (occupant.side !== piece.side) {
+          targets.push(occupant)
+          break
+        }
+        // Perçage : traverse un seul allié, et pas s'il se tient dans une forêt qui l'arrêterait.
+        if (piercing && !pierced && !stops) {
+          pierced = true
+          current = next
+          continue
+        }
         break
       }
       moves.push(next)
-      if (TERRAIN_RULES[terrain].stopsSlide) break
+      if (stops) break
       current = next
     }
   }
@@ -129,25 +147,29 @@ function leapReach(state: GameState, piece: Piece, vectors: readonly Vec[]): Rea
 }
 
 /**
- * Pion : avance d'une case tout droit vers l'avant de son camp, ou de deux à son
- * premier coup (le double pas est une glissade : la forêt l'arrête). Il n'attaque
- * qu'en diagonale vers l'avant. Pas de prise en passant ni de promotion.
+ * Pion : avance tout droit vers l'avant de son camp, d'une case, ou de deux à son
+ * premier coup ; Allonge ajoute une case. Au-delà d'une case, c'est une glissade :
+ * la forêt l'arrête (sauf Forestier). Il n'attaque qu'en diagonale vers l'avant.
+ * Pas de prise en passant ; la promotion vient du pouvoir du même nom.
  */
 function pawnReach(state: GameState, piece: Piece): Reach {
   const moves: Pos[] = []
   const targets: Piece[] = []
   const forward = DIRECTION_VECTORS[state.forward[piece.side]]
+  const forester = hasPower(piece, 'forester')
+  const maxSteps = 1 + (piece.hasMoved ? 0 : 1) + (hasPower(piece, 'reach') ? 1 : 0)
 
-  const one = add(piece.pos, forward)
-  const oneTerrain = terrainAt(state.board, one)
-  if (oneTerrain !== null && TERRAIN_RULES[oneTerrain].standable && !pieceAt(state, one)) {
-    moves.push(one)
-    if (!piece.hasMoved && !TERRAIN_RULES[oneTerrain].stopsSlide) {
-      const two = add(one, forward)
-      if (isStandable(state.board, two) && !pieceAt(state, two)) moves.push(two)
-    }
+  let current = piece.pos
+  for (let step = 1; step <= maxSteps; step++) {
+    const next = add(current, forward)
+    const terrain = terrainAt(state.board, next)
+    if (terrain === null || !TERRAIN_RULES[terrain].standable || pieceAt(state, next)) break
+    moves.push(next)
+    if (TERRAIN_RULES[terrain].stopsSlide && !forester) break
+    current = next
   }
 
+  const one = add(piece.pos, forward)
   for (const side of perpendiculars(forward)) {
     const diagonal = add(one, side)
     const occupant = pieceAt(state, diagonal)

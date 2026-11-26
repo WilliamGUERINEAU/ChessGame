@@ -1,9 +1,10 @@
-import { isStandable, terrainAt, TERRAIN_RULES } from './board/board'
+import { isStandable, terrainAt, TERRAIN_RULES, type Board } from './board/board'
 import { attackDamage, survivedApproach } from './combat/combat'
-import { add, samePos, stepToward, type Pos, type Vec } from './geometry'
+import { add, DIRECTION_VECTORS, kingDistance, samePos, stepToward, type Pos, type Vec } from './geometry'
 import { evaluateOutcome, type EndReason } from './goals/goals'
 import { legalActions, pieceActions, sameAction, type Action } from './moves'
 import { opponent, PIECES, type Piece, type Side } from './pieces/pieces'
+import { hasPower, statsFor } from './powers/powers'
 import type { GameState } from './state'
 
 /** Ce qui s'est passé pendant une action, dans l'ordre (utile pour animer l'interface). */
@@ -11,13 +12,17 @@ export type GameEvent =
   | { readonly type: 'move'; readonly pieceId: string; readonly from: Pos; readonly to: Pos }
   | { readonly type: 'iceSlide'; readonly pieceId: string; readonly from: Pos; readonly to: Pos }
   | {
-      readonly type: 'attack'
+      readonly type: 'attack' | 'riposte'
       readonly pieceId: string
       readonly targetId: string
       readonly damage: number
       readonly targetHp: number
     }
+  /** Le bouclier de la pièce a absorbé une attaque (il est maintenant épuisé). */
+  | { readonly type: 'shieldBlock'; readonly pieceId: string }
   | { readonly type: 'capture'; readonly pieceId: string; readonly byId: string }
+  /** Un Pion avec Promotion est devenu une Dame. */
+  | { readonly type: 'promote'; readonly pieceId: string }
   | { readonly type: 'pass'; readonly side: Side }
   | { readonly type: 'end'; readonly status: 'won' | 'lost'; readonly reason: EndReason }
 
@@ -66,6 +71,8 @@ export function resolveAction(state: GameState, action: Action): ActionResult {
   return turn.finish(action.kind === 'pass')
 }
 
+type PiecePatch = Partial<Pick<Piece, 'pos' | 'hp' | 'maxHp' | 'atk' | 'hasMoved' | 'type' | 'powers' | 'shieldActive'>>
+
 /** Copie de travail des pièces pendant la résolution d'une action. */
 class TurnBuilder {
   readonly events: GameEvent[] = []
@@ -77,11 +84,12 @@ class TurnBuilder {
     this.pieces = [...state.pieces]
   }
 
-  /** Déplacement simple vers une case vide, suivi d'une éventuelle glissade sur la glace. */
+  /** Déplacement vers une case vide, suivi d'une éventuelle glissade et d'une promotion. */
   movePiece(pieceId: string, to: Pos): void {
     const piece = this.get(pieceId)
     this.relocate(piece, to, 'move')
     this.slideOnIce(pieceId, iceDirection(piece, piece.pos, to))
+    this.promoteIfNeeded(pieceId)
   }
 
   attack(pieceId: string, targetPos: Pos, landing: Pos | undefined): void {
@@ -89,20 +97,15 @@ class TurnBuilder {
     const target = this.at(targetPos)
     if (!target) throw new IllegalActionError(`Aucune cible en (${targetPos.x}, ${targetPos.y})`)
 
-    const damage = attackDamage(attacker)
-    const targetHp = Math.max(0, target.hp - damage)
-    this.events.push({ type: 'attack', pieceId, targetId: target.id, damage, targetHp })
-
+    const targetHp = this.strike('attack', attacker, target)
     if (targetHp === 0) {
       // Cible tuée : l'attaquant prend sa case (et peut glisser si c'est de la glace).
-      this.pieces = this.pieces.filter((piece) => piece.id !== target.id)
-      this.events.push({ type: 'capture', pieceId: target.id, byId: pieceId })
       this.relocate(attacker, target.pos, 'move')
       this.slideOnIce(pieceId, iceDirection(attacker, attacker.pos, target.pos))
+      this.promoteIfNeeded(pieceId)
       return
     }
 
-    this.update(target.id, { hp: targetHp })
     const approach = survivedApproach(this.state, attacker, target)
     if (approach.kind === 'stopBefore') {
       this.relocate(attacker, approach.at, 'move')
@@ -111,6 +114,8 @@ class TurnBuilder {
       // Atterrissage au choix, ou sur place s'il n'y a aucune case libre : pas de glissade.
       this.relocate(attacker, landing ?? attacker.pos, 'move')
     }
+    this.riposte(target.id, pieceId)
+    this.promoteIfNeeded(pieceId)
   }
 
   finish(passed: boolean): ActionResult {
@@ -130,6 +135,51 @@ class TurnBuilder {
       state: { ...draft, status: outcome.status, endReason: outcome.reason },
       events: this.events,
     }
+  }
+
+  /**
+   * Frappe `target` (attaque ou riposte) : le bouclier absorbe le coup s'il est
+   * actif, sinon les PV baissent ; à 0 PV la cible est retirée. Renvoie ses PV restants.
+   */
+  private strike(type: 'attack' | 'riposte', striker: Piece, target: Piece): number {
+    const shielded = target.shieldActive
+    const damage = shielded ? 0 : attackDamage(striker)
+    const targetHp = Math.max(0, target.hp - damage)
+    this.events.push({ type, pieceId: striker.id, targetId: target.id, damage, targetHp })
+    if (shielded) {
+      this.update(target.id, { shieldActive: false })
+      this.events.push({ type: 'shieldBlock', pieceId: target.id })
+    }
+    if (targetHp === 0) {
+      this.pieces = this.pieces.filter((piece) => piece.id !== target.id)
+      this.events.push({ type: 'capture', pieceId: target.id, byId: striker.id })
+    } else {
+      this.update(target.id, { hp: targetHp })
+    }
+    return targetHp
+  }
+
+  /** Riposte : la cible qui a survécu frappe l'attaquant s'il a fini sur une case voisine. */
+  private riposte(defenderId: string, attackerId: string): void {
+    const defender = this.find(defenderId)
+    const attacker = this.find(attackerId)
+    if (!defender || !attacker || !hasPower(defender, 'riposte')) return
+    if (kingDistance(defender.pos, attacker.pos) !== 1) return
+    this.strike('riposte', defender, attacker)
+  }
+
+  /** Promotion : un Pion qui porte ce pouvoir et atteint le bord opposé devient une Dame. */
+  private promoteIfNeeded(pieceId: string): void {
+    const piece = this.find(pieceId)
+    if (!piece || piece.type !== 'pawn' || !hasPower(piece, 'promotion')) return
+    const forward = DIRECTION_VECTORS[this.state.forward[piece.side]]
+    if (!isLastRow(this.state.board, piece.pos, forward)) return
+    const powers = piece.powers.filter((power) => power !== 'promotion')
+    const { maxHp, atk } = statsFor('queen', powers)
+    // Les PV montent d'autant que le maximum : une blessure reste une blessure.
+    const hp = Math.min(maxHp, piece.hp + Math.max(0, maxHp - piece.maxHp))
+    this.update(pieceId, { type: 'queen', powers, maxHp, atk, hp })
+    this.events.push({ type: 'promote', pieceId })
   }
 
   /** Tant que la pièce est sur la glace, elle avance d'une case si la suivante est libre. */
@@ -154,12 +204,16 @@ class TurnBuilder {
     }
   }
 
-  private update(pieceId: string, patch: Partial<Pick<Piece, 'pos' | 'hp' | 'hasMoved'>>): void {
+  private update(pieceId: string, patch: PiecePatch): void {
     this.pieces = this.pieces.map((piece) => (piece.id === pieceId ? { ...piece, ...patch } : piece))
   }
 
+  private find(pieceId: string): Piece | undefined {
+    return this.pieces.find((candidate) => candidate.id === pieceId)
+  }
+
   private get(pieceId: string): Piece {
-    const piece = this.pieces.find((candidate) => candidate.id === pieceId)
+    const piece = this.find(pieceId)
     if (!piece) throw new IllegalActionError(`Pièce introuvable : ${pieceId}`)
     return piece
   }
@@ -171,10 +225,22 @@ class TurnBuilder {
 
 /**
  * Direction de glissade sur la glace : celle du déplacement pour les pièces qui
- * avancent en ligne (Tour, Fou, Dame, Roi, Pion) ; aucune pour un saut.
+ * avancent en ligne (Tour, Fou, Dame, Roi, Pion) ; aucune pour un saut ou avec Patins.
  */
 function iceDirection(piece: Piece, from: Pos, to: Pos): Vec | null {
-  if (PIECES[piece.type].movement.kind === 'leap') return null
+  if (PIECES[piece.type].movement.kind === 'leap' || hasPower(piece, 'skates')) return null
   if (samePos(from, to)) return null
   return stepToward(from, to)
+}
+
+/** Dernière rangée : plus aucune case du plateau devant la pièce, dans sa colonne. */
+export function isLastRow(board: Board, pos: Pos, forward: Vec): boolean {
+  for (
+    let p = add(pos, forward);
+    p.x >= 0 && p.y >= 0 && p.x < board.width && p.y < board.height;
+    p = add(p, forward)
+  ) {
+    if (terrainAt(board, p) !== null) return false
+  }
+  return true
 }

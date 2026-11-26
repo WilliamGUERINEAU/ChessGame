@@ -18,6 +18,7 @@ export function LevelSelect({ onBack, onPlay }: LevelSelectProps) {
         </button>
         <h1>{t('levels.title')}</h1>
       </header>
+      <p className="muted">{t('levels.subtitle')}</p>
       <ol className="level-list">
         {DEMO_LEVELS.map((level, index) => (
           <li key={level.id}>

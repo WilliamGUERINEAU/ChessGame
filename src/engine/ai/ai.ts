@@ -1,7 +1,7 @@
 import { resolveAction } from '../apply'
 import { kingDistance } from '../geometry'
 import { legalActions, type Action } from '../moves'
-import type { PieceType } from '../pieces/pieces'
+import { PIECES, type PieceType } from '../pieces/pieces'
 import type { Rng } from '../rng'
 import type { GameState } from '../state'
 
@@ -31,6 +31,12 @@ const TYPE_VALUE: Readonly<Record<PieceType, number>> = {
 }
 /** Valeur de chaque PV restant. */
 const HP_VALUE = 1
+/** Valeur de chaque pouvoir porté (Vigueur et Force comptent déjà via PV et ATK). */
+const POWER_VALUE = 0.5
+/** Valeur de chaque point d'ATK au-delà de la base du type (Force, promotion…). */
+const BONUS_ATK_VALUE = 1
+/** Valeur d'un bouclier encore actif : il vaut à peu près une attaque encaissée. */
+const SHIELD_VALUE = 1.5
 /** Valeur supplémentaire de chaque PV du héros : l'ennemi cherche à l'user. */
 const HERO_HP_VALUE = 3
 /** Valeur supplémentaire de la cible d'un niveau de capture. */
@@ -132,6 +138,8 @@ function positionForEnemy(state: GameState, weights: Weights): number {
   let score = 0
   for (const piece of state.pieces) {
     let value = TYPE_VALUE[piece.type] + piece.hp * HP_VALUE
+    value += Math.max(0, piece.atk - PIECES[piece.type].atk) * BONUS_ATK_VALUE
+    value += piece.powers.length * POWER_VALUE + (piece.shieldActive ? SHIELD_VALUE : 0)
     if (piece.id === state.heroId) value += piece.hp * HERO_HP_VALUE
     if (piece.id === targetId) value += TARGET_BONUS
     score += piece.side === 'enemy' ? value : -value

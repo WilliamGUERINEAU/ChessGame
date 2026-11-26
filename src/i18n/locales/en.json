@@ -5,15 +5,15 @@
   },
   "menu": {
     "newRun": "New run",
-    "chooseLevel": "Choose a level",
+    "practice": "Practice",
     "back": "Back",
-    "demoNotice": "Demo: five handmade levels, no rewards yet."
+    "demoNotice": "A run is 5 levels in a row, with a reward after each win. Practice lets you replay each level with a fixed army."
   },
   "settings": {
     "language": "Language"
   },
   "levels": {
-    "title": "Levels",
+    "title": "Practice",
     "number": "Level {{number}}",
     "first-steps": {
       "name": "First steps",
@@ -34,7 +34,8 @@
     "the-warden": {
       "name": "The warden",
       "description": "Take down the warden rook (5 HP) before the end of round 12."
-    }
+    },
+    "subtitle": "Replay each level with a fixed army, as often as you like."
   },
   "goal": {
     "eliminate": "Capture every enemy piece",
@@ -90,17 +91,35 @@
     "enemy": "enemy"
   },
   "terrain": {
-    "floor": { "name": "Floor", "rule": "No effect." },
-    "forest": { "name": "Forest", "rule": "Stops sliding pieces." },
-    "water": { "name": "Water", "rule": "Impassable, except by jumping." },
-    "wall": { "name": "Wall", "rule": "Impassable, except by jumping." },
-    "ice": { "name": "Ice", "rule": "A piece that stops on it keeps sliding." }
+    "floor": {
+      "name": "Floor",
+      "rule": "No effect."
+    },
+    "forest": {
+      "name": "Forest",
+      "rule": "Stops sliding pieces."
+    },
+    "water": {
+      "name": "Water",
+      "rule": "Impassable, except by jumping."
+    },
+    "wall": {
+      "name": "Wall",
+      "rule": "Impassable, except by jumping."
+    },
+    "ice": {
+      "name": "Ice",
+      "rule": "A piece that stops on it keeps sliding."
+    }
   },
   "log": {
     "attack": "{{attacker}} → {{target}}: −{{damage}} HP",
     "capture": "Captured: {{target}}",
     "iceSlide": "Slides: {{piece}}",
-    "pass": "Turn passed ({{side}})"
+    "pass": "Turn passed ({{side}})",
+    "riposte": "Riposte: {{attacker}} → {{target}}: −{{damage}} HP",
+    "shieldBlock": "Shield: {{piece}}",
+    "promote": "Promotion: {{piece}} becomes a queen"
   },
   "a11y": {
     "board": "Game board",
@@ -108,6 +127,92 @@
     "piece": "{{piece}} ({{side}}), {{hp}} of {{maxHp}} HP, {{atk}} ATK",
     "move": "can move here",
     "attack": "can attack",
-    "landing": "can land here"
+    "landing": "can land here",
+    "deploy": "deployment square",
+    "shield": "shield up"
+  },
+  "classes": {
+    "title": "Choose your hero",
+    "subtitle": "Your hero leads the army: if it falls, the run is lost.",
+    "army": "Army",
+    "sovereign": {
+      "name": "Sovereign",
+      "description": "A king surrounded by a large army. Whoever strikes him faces his riposte."
+    },
+    "knightess": {
+      "name": "Knight-errant",
+      "description": "A mobile, sturdy knight protected by her shield, backed by two bishops."
+    }
+  },
+  "powers": {
+    "vigor": {
+      "name": "Vigor",
+      "description": "+1 max HP."
+    },
+    "strength": {
+      "name": "Strength",
+      "description": "+1 ATK."
+    },
+    "forester": {
+      "name": "Woodland stride",
+      "description": "Forests no longer stop its slides."
+    },
+    "skates": {
+      "name": "Skates",
+      "description": "Does not slide on ice."
+    },
+    "reach": {
+      "name": "Reach",
+      "description": "King: up to 2 squares. Pawn: one more square forward."
+    },
+    "shield": {
+      "name": "Shield",
+      "description": "The first attack taken each level deals no damage."
+    },
+    "riposte": {
+      "name": "Riposte",
+      "description": "If it survives an attack and the attacker ends next to it, it strikes back at once."
+    },
+    "promotion": {
+      "name": "Promotion",
+      "description": "A pawn reaching the far edge becomes a queen for the rest of the run."
+    },
+    "piercing": {
+      "name": "Piercing",
+      "description": "Its slides pass through the first allied piece in the way."
+    }
+  },
+  "run": {
+    "level": "Level {{number}} / {{total}}",
+    "deployTitle": "Deployment",
+    "deployHint": "Tap one of your pieces to move it within the blue zone.",
+    "deployMove": "Tap a zone square, or another of your pieces to swap them.",
+    "autoPlace": "Auto placement",
+    "start": "Start the level",
+    "abandon": "Give up",
+    "abandonTitle": "Give up this run?",
+    "abandonText": "Your progress will be lost.",
+    "abandonConfirm": "Give up the run",
+    "abandonCancel": "Keep playing",
+    "army": "Your army",
+    "finalArmy": "Your final army",
+    "armyCount": "{{count}} / {{max}} pieces",
+    "noPowers": "No powers",
+    "rewardTitle": "Reward",
+    "rewardSubtitle": "Level {{number}} / {{total}} cleared! Choose a reward.",
+    "newPiece": "New piece",
+    "power": "Power",
+    "forPieces": "For: {{pieces}}",
+    "chooseTarget": "Which piece gets this power?",
+    "confirm": "Confirm",
+    "toReward": "Choose a reward",
+    "toSummary": "See the summary",
+    "over": "The run is over.",
+    "wonTitle": "Run won!",
+    "lostTitle": "Run lost",
+    "wonText": "You made it through all {{total}} levels. Well done!",
+    "levelsCleared": "Levels cleared: {{count}} / {{total}}",
+    "newRun": "New run",
+    "menu": "Menu"
   }
 }

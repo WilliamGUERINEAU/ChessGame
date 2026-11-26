@@ -1,30 +1,47 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { findPiece, type Goal, type Piece, type Terrain } from '../../engine'
-import type { LevelContent } from '../../content/levels'
+import { findPiece, type GameState, type Goal, type Piece, type Terrain } from '../../engine'
 import { Board } from '../board/Board'
 import { PieceGlyph } from '../board/PieceGlyph'
 import { CELL, TerrainTile } from '../board/TerrainTile'
+import { Dialog, type DialogAction } from '../Dialog'
 import type { LogEntry, PieceLabel } from '../game/interaction'
-import { useGame } from '../game/useGame'
-import { EndDialog } from './EndDialog'
+import { useGame, type BattleSetup } from '../game/useGame'
+import { powerNames } from '../powers'
+
+/** Entraînement (armée fixe, on peut recommencer) ou combat d'un run. */
+export type GameMode =
+  | {
+      readonly kind: 'practice'
+      readonly hasNext: boolean
+      readonly onRestart: () => void
+      readonly onNext: () => void
+      readonly onLevels: () => void
+    }
+  | {
+      readonly kind: 'run'
+      readonly levelCount: number
+      readonly isLastLevel: boolean
+      /** Appelé quand le joueur quitte l'écran de fin, avec l'état final du combat. */
+      readonly onFinished: (state: GameState) => void
+      readonly onAbandon: () => void
+    }
 
 export interface GameScreenProps {
-  readonly level: LevelContent
+  readonly levelId: string
   /** Numéro du niveau, à partir de 1. */
   readonly levelNumber: number
-  readonly attempt: number
-  readonly hasNext: boolean
-  readonly onRestart: () => void
-  readonly onNext: () => void
-  readonly onLevels: () => void
+  readonly setup: BattleSetup
+  readonly mode: GameMode
 }
 
 const TERRAINS: readonly Terrain[] = ['floor', 'forest', 'water', 'wall', 'ice']
 
-export function GameScreen({ level, levelNumber, attempt, hasNext, onRestart, onNext, onLevels }: GameScreenProps) {
+export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProps) {
   const { t } = useTranslation()
-  const game = useGame(level, attempt)
+  const game = useGame(setup)
+  const [confirmAbandon, setConfirmAbandon] = useState(false)
   const { state, selection, log, lastMove, hits, plies } = game.model
   const ended = state.status !== 'ongoing'
   const selected = selection.kind === 'none' ? undefined : findPiece(state, selection.pieceId)
@@ -40,12 +57,22 @@ export function GameScreen({ level, levelNumber, attempt, hasNext, onRestart, on
   return (
     <div className="game">
       <header className="game-header">
-        <button type="button" className="button-ghost" onClick={onLevels}>
-          ← {t('game.levels')}
-        </button>
+        {mode.kind === 'practice' ? (
+          <button type="button" className="button-ghost" onClick={mode.onLevels}>
+            ← {t('game.levels')}
+          </button>
+        ) : (
+          <button type="button" className="button-ghost" onClick={() => setConfirmAbandon(true)}>
+            ← {t('run.abandon')}
+          </button>
+        )}
         <div className="game-heading">
-          <p className="game-level">{t('levels.number', { number: levelNumber })}</p>
-          <h1>{t(`levels.${level.id}.name`)}</h1>
+          <p className="game-level">
+            {mode.kind === 'run'
+              ? t('run.level', { number: levelNumber, total: mode.levelCount })
+              : t('levels.number', { number: levelNumber })}
+          </p>
+          <h1>{t(`levels.${levelId}.name`)}</h1>
         </div>
         <p className="game-round">{roundLabel(state.goal, state.round, t)}</p>
       </header>
@@ -121,28 +148,68 @@ export function GameScreen({ level, levelNumber, attempt, hasNext, onRestart, on
             </ul>
           </details>
 
-          <button type="button" className="button-secondary" onClick={onRestart}>
-            {t('game.restart')}
-          </button>
+          {mode.kind === 'practice' && (
+            <button type="button" className="button-secondary" onClick={mode.onRestart}>
+              {t('game.restart')}
+            </button>
+          )}
         </aside>
       </div>
 
       {ended && state.endReason && (
-        <EndDialog
-          status={state.status === 'won' ? 'won' : 'lost'}
-          reason={state.endReason}
-          hasNext={hasNext}
-          onNext={onNext}
-          onRestart={onRestart}
-          onLevels={onLevels}
-        />
+        <Dialog
+          title={t(`end.${state.status}`)}
+          tone={state.status === 'won' ? 'won' : 'lost'}
+          actions={endActions(mode, state, t)}
+        >
+          <p>{t(`end.reason.${state.endReason}`)}</p>
+          {mode.kind === 'practice' && state.status === 'won' && !mode.hasNext && <p>{t('game.demoComplete')}</p>}
+          {mode.kind === 'run' && state.status === 'lost' && <p>{t('run.over')}</p>}
+        </Dialog>
+      )}
+
+      {confirmAbandon && mode.kind === 'run' && (
+        <AbandonDialog onConfirm={mode.onAbandon} onCancel={() => setConfirmAbandon(false)} />
       )}
     </div>
   )
 }
 
+/** Confirmation avant d'abandonner un run (la progression est perdue). */
+export function AbandonDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  const { t } = useTranslation()
+  return (
+    <Dialog
+      title={t('run.abandonTitle')}
+      onDismiss={onCancel}
+      actions={[
+        { label: t('run.abandonCancel'), onClick: onCancel, variant: 'primary' },
+        { label: t('run.abandonConfirm'), onClick: onConfirm, variant: 'danger' },
+      ]}
+    >
+      <p>{t('run.abandonText')}</p>
+    </Dialog>
+  )
+}
+
+function endActions(mode: GameMode, state: GameState, t: TFunction): DialogAction[] {
+  if (mode.kind === 'run') {
+    const label =
+      state.status === 'won' && !mode.isLastLevel ? t('run.toReward') : t('run.toSummary')
+    return [{ label, onClick: () => mode.onFinished(state), variant: 'primary' }]
+  }
+  const actions: DialogAction[] = []
+  if (state.status === 'won' && mode.hasNext) {
+    actions.push({ label: t('game.next'), onClick: mode.onNext, variant: 'primary' })
+  }
+  actions.push({ label: t('game.restart'), onClick: mode.onRestart, variant: actions.length ? 'secondary' : 'primary' })
+  actions.push({ label: t('game.levels'), onClick: mode.onLevels })
+  return actions
+}
+
 function PieceCard({ piece, isHero, isTarget }: { piece: Piece; isHero: boolean; isTarget: boolean }) {
   const { t } = useTranslation()
+  const powers = powerNames(piece.powers, t)
   return (
     <section className="piece-card">
       <svg viewBox="0 0 100 100" className={`piece-card-glyph piece--${piece.side}`} aria-hidden="true">
@@ -156,7 +223,9 @@ function PieceCard({ piece, isHero, isTarget }: { piece: Piece; isHero: boolean;
         </h2>
         <p>
           {t('game.hp')} {piece.hp}/{piece.maxHp} · {t('game.atk')} {piece.atk}
+          {piece.shieldActive && ` · ${t('a11y.shield')}`}
         </p>
+        {powers.length > 0 && <p className="piece-card-powers">{powers.join(', ')}</p>}
       </div>
     </section>
   )
@@ -183,10 +252,13 @@ function roundLabel(goal: Goal, round: number, t: TFunction): string {
 function entrySide(entry: LogEntry): string {
   switch (entry.kind) {
     case 'attack':
+    case 'riposte':
       return entry.attacker.side
     case 'capture':
       return entry.target.side === 'player' ? 'enemy' : 'player'
     case 'iceSlide':
+    case 'shieldBlock':
+    case 'promote':
       return entry.piece.side
     case 'pass':
       return entry.side
@@ -197,11 +269,14 @@ function describeEntry(entry: LogEntry, t: TFunction): string {
   const name = (label: PieceLabel) => `${t(`pieces.${label.type}`)} (${t(`sides.${label.side}`)})`
   switch (entry.kind) {
     case 'attack':
-      return t('log.attack', { attacker: name(entry.attacker), target: name(entry.target), damage: entry.damage })
+    case 'riposte':
+      return t(`log.${entry.kind}`, { attacker: name(entry.attacker), target: name(entry.target), damage: entry.damage })
     case 'capture':
       return t('log.capture', { target: name(entry.target) })
     case 'iceSlide':
-      return t('log.iceSlide', { piece: name(entry.piece) })
+    case 'shieldBlock':
+    case 'promote':
+      return t(`log.${entry.kind}`, { piece: name(entry.piece) })
     case 'pass':
       return t('log.pass', { side: t(`sides.${entry.side}`) })
   }

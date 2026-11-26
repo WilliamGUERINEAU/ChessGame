@@ -11,10 +11,10 @@ const PREVIEW_CELLS: ReadonlyArray<readonly [number, number]> = [
 
 export interface HomeProps {
   readonly onNewRun: () => void
-  readonly onChooseLevel: () => void
+  readonly onPractice: () => void
 }
 
-export function Home({ onNewRun, onChooseLevel }: HomeProps) {
+export function Home({ onNewRun, onPractice }: HomeProps) {
   const { t, i18n } = useTranslation()
 
   return (
@@ -38,8 +38,8 @@ export function Home({ onNewRun, onChooseLevel }: HomeProps) {
         <button type="button" className="button-primary" onClick={onNewRun}>
           {t('menu.newRun')}
         </button>
-        <button type="button" className="button-secondary" onClick={onChooseLevel}>
-          {t('menu.chooseLevel')}
+        <button type="button" className="button-secondary" onClick={onPractice}>
+          {t('menu.practice')}
         </button>
       </nav>
 

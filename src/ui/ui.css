@@ -661,3 +661,245 @@ summary:focus-visible {
   gap: 8px;
   margin-top: 16px;
 }
+
+/* ---------- Run : éléments communs ---------- */
+
+.button-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.dialog-title--neutral {
+  color: var(--text);
+}
+
+.mark-zone {
+  fill: var(--mark-landing-fill);
+  stroke: var(--mark-landing);
+  stroke-width: 2;
+  stroke-opacity: 0.5;
+}
+
+.badge-shield {
+  fill: #5b8def;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.piece-card-powers {
+  margin-top: 2px;
+  font-size: 0.875rem;
+}
+
+/* ---------- Armée ---------- */
+
+.army-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.army-item {
+  width: 100%;
+  min-height: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 400;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+button.army-item.is-selected {
+  border-color: var(--mark-selected);
+  box-shadow: 0 0 0 2px var(--mark-selected);
+}
+
+.army-glyph {
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+
+.army-text {
+  display: grid;
+  min-width: 0;
+}
+
+.army-name {
+  font-weight: 700;
+}
+
+.army-stats,
+.army-powers {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Choix de la classe ---------- */
+
+.class-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.class-card {
+  width: 100%;
+  min-height: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  text-align: left;
+  font-weight: 400;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.class-card:hover {
+  border-color: var(--accent);
+}
+
+.class-glyph {
+  width: 64px;
+  height: 64px;
+  flex: none;
+}
+
+.class-text {
+  display: grid;
+  gap: 4px;
+}
+
+.class-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.class-description {
+  color: var(--text-muted);
+}
+
+.class-line {
+  font-size: 0.9rem;
+}
+
+/* ---------- Récompenses ---------- */
+
+.reward-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 720px) {
+  .reward-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.reward-card {
+  width: 100%;
+  height: 100%;
+  min-height: auto;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 400;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+}
+
+.reward-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.reward-glyph {
+  width: 56px;
+  height: 56px;
+}
+
+.reward-power {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  border-radius: 50%;
+  background: var(--mark-landing-fill);
+  color: var(--mark-landing);
+}
+
+.reward-kind {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.reward-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.reward-description {
+  font-size: 0.9rem;
+}
+
+.reward-for {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.reward-target {
+  margin-top: 20px;
+}
+
+.reward-target h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.reward-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+@media (min-width: 720px) {
+  .reward-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.run-summary h1 {
+  margin: 8px 0;
+  font-size: 2rem;
+}

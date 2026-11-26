@@ -1,4 +1,5 @@
 import { ALL_DIRECTIONS, DIAGONAL, KNIGHT_JUMPS, ORTHOGONAL, type Pos, type Vec } from '../geometry'
+import type { PowerId } from '../powers/powers'
 
 export type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn'
 
@@ -55,4 +56,8 @@ export interface Piece {
   readonly atk: number
   /** A déjà agi pendant ce niveau (perd le double pas du pion). */
   readonly hasMoved: boolean
+  /** Pouvoirs portés (un pouvoir cumulable apparaît une fois par exemplaire). */
+  readonly powers: readonly PowerId[]
+  /** Bouclier encore disponible pour ce niveau. */
+  readonly shieldActive: boolean
 }

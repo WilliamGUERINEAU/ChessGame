@@ -1,11 +1,18 @@
 import type { Direction, GoalDefinition, LevelDefinition, Pos, Side, UnitSpec } from '../engine'
 import { posKey, unitsFromAscii } from '../engine'
 
-/** Un niveau jouable : sa définition pour le moteur et quelques réglages. */
+/**
+ * Un niveau jouable : sa définition pour le moteur et quelques réglages.
+ * En entraînement, on joue `definition` telle quelle (armée fixe). Dans un run,
+ * seules ses pièces ennemies sont reprises : l'armée du joueur est placée dans
+ * la zone `deployment`.
+ */
 export interface LevelContent {
   /** Identifiant stable, aussi utilisé pour les textes : `levels.<id>.name` et `.description`. */
   readonly id: string
   readonly definition: LevelDefinition
+  /** Cases où le joueur déploie son armée dans un run. */
+  readonly deployment: readonly Pos[]
   /** Profondeur de recherche de l'IA ennemie. */
   readonly aiDepth: number
   /** Agressivité de l'IA ennemie (voir `AiOptions.aggression`). */
@@ -20,6 +27,8 @@ interface LevelSpec {
   readonly terrain: readonly string[]
   /** Pièces en texte : K Q R B N P = joueur, k q r b n p = ennemi. */
   readonly units: readonly string[]
+  /** Zone de déploiement en texte, alignée sur le plateau : `x` = case de la zone. */
+  readonly deployment: readonly string[]
   readonly hero: Pos
   readonly goal: GoalDefinition
   readonly forward?: Readonly<Record<Side, Direction>>
@@ -29,10 +38,15 @@ interface LevelSpec {
   readonly aiAggression?: number
 }
 
+function cellsMarked(rows: readonly string[]): Pos[] {
+  return rows.flatMap((row, y) => [...row].flatMap((ch, x) => (ch === 'x' ? [{ x, y }] : [])))
+}
+
 function level(id: string, spec: LevelSpec): LevelContent {
   const units = unitsFromAscii(spec.units).map((unit) => ({ ...unit, ...spec.stats?.[posKey(unit.at)] }))
   return {
     id,
+    deployment: cellsMarked(spec.deployment),
     aiDepth: spec.aiDepth ?? DEFAULT_LEVEL_AI.depth,
     aiAggression: spec.aiAggression ?? DEFAULT_LEVEL_AI.aggression,
     definition: {
@@ -67,6 +81,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
       '.R...N.',
       ' ..K.. ',
     ],
+    deployment: ['', '', '', '', 'xxxxxxx', ' xxxxx '],
     hero: { x: 3, y: 5 },
     goal: { kind: 'eliminate' },
     // Niveau d'introduction : l'ennemi ne voit qu'un coup (le joueur gagne même en jouant à courte vue).
@@ -90,6 +105,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
       '.....B..',
       '....K..R',
     ],
+    deployment: ['', '', '', '', '    xxxx', '    xxxx'],
     hero: { x: 4, y: 5 },
     goal: { kind: 'eliminate' },
     aiDepth: 2,
@@ -112,6 +128,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
       '.......',
       '.N.K.R.',
     ],
+    deployment: ['', '', '', '', 'xxxxxxx', 'xxxxxxx'],
     hero: { x: 3, y: 5 },
     goal: { kind: 'eliminate' },
     // Plus agressifs : sur la glace, des ennemis prudents tournent en rond.
@@ -135,6 +152,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
       '.P..P.',
       '..KR..',
     ],
+    deployment: ['', '', '', '', 'xxxxxx', 'xxxxxx'],
     hero: { x: 2, y: 5 },
     goal: { kind: 'survive', rounds: 6 },
   }),
@@ -158,6 +176,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
       '.......',
       ' .NKQ. ',
     ],
+    deployment: ['', '', '', '', '', 'xxxxxxx', ' xxxxx '],
     hero: { x: 3, y: 6 },
     goal: { kind: 'capture', target: { x: 3, y: 0 }, maxRounds: 12 },
     stats: { '3,0': { id: 'warden', hp: 5 } },

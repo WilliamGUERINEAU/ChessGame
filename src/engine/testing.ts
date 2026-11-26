@@ -18,8 +18,8 @@ export interface TestLevelOptions {
   readonly forward?: Readonly<Record<Side, Direction>>
   /** Par défaut : capturer toutes les pièces adverses. */
   readonly goal?: GoalDefinition
-  /** Statistiques à forcer, par case « x,y ». */
-  readonly stats?: Readonly<Record<string, Partial<Pick<UnitSpec, 'id' | 'hp' | 'maxHp' | 'atk'>>>>
+  /** Statistiques et pouvoirs à forcer, par case « x,y ». */
+  readonly stats?: Readonly<Record<string, Partial<Pick<UnitSpec, 'id' | 'hp' | 'maxHp' | 'atk' | 'powers'>>>>
 }
 
 export function testLevel(options: TestLevelOptions): GameState {

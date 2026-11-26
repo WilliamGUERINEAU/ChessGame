@@ -7,7 +7,8 @@ import {
   type GoalDefinition,
   type Status,
 } from './goals/goals'
-import { PIECE_LETTERS, PIECES, type Piece, type PieceType, type Side } from './pieces/pieces'
+import { PIECE_LETTERS, type Piece, type PieceType, type Side } from './pieces/pieces'
+import { statsFor, type PowerId } from './powers/powers'
 
 /** Une unité à placer au début d'un niveau. */
 export interface UnitSpec {
@@ -16,10 +17,13 @@ export interface UnitSpec {
   readonly at: Pos
   /** Identifiant stable ; sinon p1, p2… (joueur) et e1, e2… (ennemi) en ordre de déclaration. */
   readonly id?: string
+  /** Pouvoirs portés ; Vigueur et Force s'ajoutent aux valeurs de base. */
+  readonly powers?: readonly PowerId[]
   /** PV de départ (par défaut : PV max). */
   readonly hp?: number
-  /** PV max (par défaut : `hp` s'il est donné, sinon la valeur de base de la pièce). */
+  /** PV max (par défaut : `hp` s'il est donné, sinon base du type + Vigueur). */
   readonly maxHp?: number
+  /** Attaque (par défaut : base du type + Force). */
   readonly atk?: number
 }
 
@@ -92,16 +96,28 @@ export function createLevel(def: LevelDefinition): GameState {
     if (usedIds.has(id)) throw new Error(`Identifiant d'unité en double : ${id}`)
     usedIds.add(id)
 
-    const base = PIECES[unit.type]
-    const maxHp = unit.maxHp ?? unit.hp ?? base.hp
+    const powers = unit.powers ?? []
+    const stats = statsFor(unit.type, powers)
+    const maxHp = unit.maxHp ?? unit.hp ?? stats.maxHp
     const hp = unit.hp ?? maxHp
-    const atk = unit.atk ?? base.atk
+    const atk = unit.atk ?? stats.atk
     if (!isPositiveInteger(maxHp) || !isPositiveInteger(hp) || hp > maxHp) {
       throw new Error(`PV invalides pour ${id} : ${hp}/${maxHp}`)
     }
     if (!Number.isInteger(atk) || atk < 0) throw new Error(`Attaque invalide pour ${id} : ${atk}`)
 
-    return { id, type: unit.type, side: unit.side, pos: unit.at, hp, maxHp, atk, hasMoved: false }
+    return {
+      id,
+      type: unit.type,
+      side: unit.side,
+      pos: unit.at,
+      hp,
+      maxHp,
+      atk,
+      hasMoved: false,
+      powers,
+      shieldActive: powers.includes('shield'),
+    }
   })
 
   const hero = pieces.find((piece) => samePos(piece.pos, def.hero))

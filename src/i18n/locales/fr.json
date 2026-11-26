@@ -5,15 +5,15 @@
   },
   "menu": {
     "newRun": "Nouvelle partie",
-    "chooseLevel": "Choisir un niveau",
+    "practice": "Entraînement",
     "back": "Retour",
-    "demoNotice": "Démo : cinq niveaux faits main, sans récompenses pour l'instant."
+    "demoNotice": "Un run, ce sont 5 niveaux d’affilée avec une récompense après chaque victoire. L’entraînement permet de rejouer chaque niveau avec une armée fixe."
   },
   "settings": {
     "language": "Langue"
   },
   "levels": {
-    "title": "Niveaux",
+    "title": "Entraînement",
     "number": "Niveau {{number}}",
     "first-steps": {
       "name": "Premiers pas",
@@ -34,7 +34,8 @@
     "the-warden": {
       "name": "Le gardien",
       "description": "Abattez la Tour gardienne (5 PV) avant la fin du 12ᵉ tour."
-    }
+    },
+    "subtitle": "Rejouez chaque niveau avec une armée fixe, autant de fois que vous voulez."
   },
   "goal": {
     "eliminate": "Capturez toutes les pièces ennemies",
@@ -90,17 +91,35 @@
     "enemy": "ennemi"
   },
   "terrain": {
-    "floor": { "name": "Sol", "rule": "Aucun effet." },
-    "forest": { "name": "Forêt", "rule": "Arrête les pièces qui glissent." },
-    "water": { "name": "Eau", "rule": "Infranchissable, sauf en sautant." },
-    "wall": { "name": "Mur", "rule": "Infranchissable, sauf en sautant." },
-    "ice": { "name": "Glace", "rule": "Une pièce qui s'y arrête glisse encore." }
+    "floor": {
+      "name": "Sol",
+      "rule": "Aucun effet."
+    },
+    "forest": {
+      "name": "Forêt",
+      "rule": "Arrête les pièces qui glissent."
+    },
+    "water": {
+      "name": "Eau",
+      "rule": "Infranchissable, sauf en sautant."
+    },
+    "wall": {
+      "name": "Mur",
+      "rule": "Infranchissable, sauf en sautant."
+    },
+    "ice": {
+      "name": "Glace",
+      "rule": "Une pièce qui s'y arrête glisse encore."
+    }
   },
   "log": {
     "attack": "{{attacker}} → {{target}} : −{{damage}} PV",
     "capture": "Capture : {{target}}",
     "iceSlide": "Glissade : {{piece}}",
-    "pass": "Tour passé ({{side}})"
+    "pass": "Tour passé ({{side}})",
+    "riposte": "Riposte : {{attacker}} → {{target}} : −{{damage}} PV",
+    "shieldBlock": "Bouclier : {{piece}}",
+    "promote": "Promotion : {{piece}} devient Dame"
   },
   "a11y": {
     "board": "Plateau de jeu",
@@ -108,6 +127,92 @@
     "piece": "{{piece}} ({{side}}), {{hp}} sur {{maxHp}} PV, {{atk}} ATK",
     "move": "déplacement possible",
     "attack": "attaque possible",
-    "landing": "atterrissage possible"
+    "landing": "atterrissage possible",
+    "deploy": "case de déploiement",
+    "shield": "bouclier actif"
+  },
+  "classes": {
+    "title": "Choisissez votre héros",
+    "subtitle": "Votre héros mène l’armée : s’il tombe, le run est perdu.",
+    "army": "Armée",
+    "sovereign": {
+      "name": "Souverain",
+      "description": "Un Roi entouré d’une armée nombreuse. Qui le frappe s’expose à sa riposte."
+    },
+    "knightess": {
+      "name": "Chevalière",
+      "description": "Une Cavalière mobile et solide, protégée par son bouclier, appuyée par deux Fous."
+    }
+  },
+  "powers": {
+    "vigor": {
+      "name": "Vigueur",
+      "description": "+1 PV max."
+    },
+    "strength": {
+      "name": "Force",
+      "description": "+1 ATK."
+    },
+    "forester": {
+      "name": "Forestier",
+      "description": "La forêt n’arrête plus ses glissades."
+    },
+    "skates": {
+      "name": "Patins",
+      "description": "Ne glisse pas sur la glace."
+    },
+    "reach": {
+      "name": "Allonge",
+      "description": "Roi : jusqu’à 2 cases. Pion : une case de plus vers l’avant."
+    },
+    "shield": {
+      "name": "Bouclier",
+      "description": "La première attaque reçue à chaque niveau ne fait aucun dégât."
+    },
+    "riposte": {
+      "name": "Riposte",
+      "description": "Si elle survit à une attaque et que l’attaquant finit à côté, elle le frappe aussitôt."
+    },
+    "promotion": {
+      "name": "Promotion",
+      "description": "Un Pion qui atteint le bord opposé devient une Dame, pour tout le run."
+    },
+    "piercing": {
+      "name": "Perçage",
+      "description": "Ses glissades traversent la première pièce alliée rencontrée."
+    }
+  },
+  "run": {
+    "level": "Niveau {{number}} / {{total}}",
+    "deployTitle": "Déploiement",
+    "deployHint": "Touchez une de vos pièces pour la déplacer dans la zone bleue.",
+    "deployMove": "Touchez une case de la zone, ou une autre de vos pièces pour les échanger.",
+    "autoPlace": "Placement automatique",
+    "start": "Commencer le niveau",
+    "abandon": "Abandonner",
+    "abandonTitle": "Abandonner ce run ?",
+    "abandonText": "Votre progression sera perdue.",
+    "abandonConfirm": "Abandonner le run",
+    "abandonCancel": "Continuer le run",
+    "army": "Votre armée",
+    "finalArmy": "Votre armée finale",
+    "armyCount": "{{count}} / {{max}} pièces",
+    "noPowers": "Aucun pouvoir",
+    "rewardTitle": "Récompense",
+    "rewardSubtitle": "Niveau {{number}} / {{total}} réussi ! Choisissez une récompense.",
+    "newPiece": "Nouvelle pièce",
+    "power": "Pouvoir",
+    "forPieces": "Pour : {{pieces}}",
+    "chooseTarget": "Quelle pièce reçoit ce pouvoir ?",
+    "confirm": "Valider",
+    "toReward": "Choisir une récompense",
+    "toSummary": "Voir le bilan",
+    "over": "Le run est terminé.",
+    "wonTitle": "Run gagné !",
+    "lostTitle": "Run perdu",
+    "wonText": "Vous avez traversé les {{total}} niveaux. Bravo !",
+    "levelsCleared": "Niveaux réussis : {{count}} / {{total}}",
+    "newRun": "Nouveau run",
+    "menu": "Menu"
   }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { applyAction, createLevel, createRng, legalActions } from '../engine'
+import { applyAction, createLevel, createRng, isStandable, legalActions, parseBoard, posKey } from '../engine'
 import { chooseAction } from '../engine/ai/ai'
+import { MAX_ARMY } from '../run/run'
 import { DEMO_LEVELS, type LevelContent } from './levels'
 import en from '../i18n/locales/en.json'
 import fr from '../i18n/locales/fr.json'
@@ -29,6 +30,19 @@ describe('niveaux de démonstration', () => {
     const ids = DEMO_LEVELS.map((level) => level.id)
     expect(new Set(ids).size).toBe(ids.length)
   })
+
+  it.each(DEMO_LEVELS.map((level) => [level.id, level] as const))(
+    '%s : zone de déploiement assez grande pour une armée complète, praticable et libre d’ennemis',
+    (_id, level) => {
+      const board = parseBoard(level.definition.terrain)
+      const enemyCells = level.definition.units.filter((unit) => unit.side === 'enemy').map((unit) => posKey(unit.at))
+      expect(level.deployment.length).toBeGreaterThanOrEqual(MAX_ARMY)
+      for (const cell of level.deployment) {
+        expect(isStandable(board, cell), `case ${posKey(cell)}`).toBe(true)
+        expect(enemyCells).not.toContain(posKey(cell))
+      }
+    },
+  )
 
   it.each(DEMO_LEVELS.map((level) => [level.id, level] as const))(
     '%s : se crée sans erreur et le joueur peut jouer',

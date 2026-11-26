@@ -3,13 +3,18 @@ import { add, ALL_DIRECTIONS, kingDistance, stepToward, type Pos } from '../geom
 import { PIECES, type Piece } from '../pieces/pieces'
 import { pieceAt, type GameState } from '../state'
 
-/** Dégâts infligés par une attaque. Point d'entrée des futurs pouvoirs. */
+/** Dégâts infligés par une attaque (Force comprise dans l'ATK). */
 export function attackDamage(attacker: Piece): number {
   return attacker.atk
 }
 
+/** Dégâts réellement subis par la cible : aucun si son bouclier est encore actif. */
+export function damageTaken(attacker: Piece, target: Piece): number {
+  return target.shieldActive ? 0 : attackDamage(attacker)
+}
+
 export function wouldKill(attacker: Piece, target: Piece): boolean {
-  return target.hp - attackDamage(attacker) <= 0
+  return target.hp - damageTaken(attacker, target) <= 0
 }
 
 /**
@@ -17,6 +22,9 @@ export function wouldKill(attacker: Piece, target: Piece): boolean {
  * - `stopBefore` : attaque en glissade depuis 2 cases ou plus → case juste avant la cible ;
  * - `land` : attaque adjacente ou saut → une des cases voisines libres de la cible
  *   (8 directions), au choix ; si `options` est vide, il reste sur sa case.
+ *
+ * Avec Perçage, la case juste avant la cible peut être occupée par l'allié traversé :
+ * l'attaquant reste alors sur sa case.
  */
 export type SurvivedApproach =
   | { readonly kind: 'stopBefore'; readonly at: Pos }
@@ -30,7 +38,8 @@ export function survivedApproach(
   const movement = PIECES[attacker.type].movement
   if (movement.kind === 'slide' && kingDistance(attacker.pos, target.pos) >= 2) {
     const dir = stepToward(attacker.pos, target.pos)
-    return { kind: 'stopBefore', at: { x: target.pos.x - dir.x, y: target.pos.y - dir.y } }
+    const at = { x: target.pos.x - dir.x, y: target.pos.y - dir.y }
+    return pieceAt(state, at) ? { kind: 'land', options: [] } : { kind: 'stopBefore', at }
   }
   return { kind: 'land', options: landingOptions(state, attacker, target) }
 }

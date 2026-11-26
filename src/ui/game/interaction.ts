@@ -98,9 +98,15 @@ export interface PieceLabel {
 }
 
 export type LogEntry =
-  | { readonly id: number; readonly kind: 'attack'; readonly attacker: PieceLabel; readonly target: PieceLabel; readonly damage: number }
+  | {
+      readonly id: number
+      readonly kind: 'attack' | 'riposte'
+      readonly attacker: PieceLabel
+      readonly target: PieceLabel
+      readonly damage: number
+    }
   | { readonly id: number; readonly kind: 'capture'; readonly target: PieceLabel }
-  | { readonly id: number; readonly kind: 'iceSlide'; readonly piece: PieceLabel }
+  | { readonly id: number; readonly kind: 'iceSlide' | 'shieldBlock' | 'promote'; readonly piece: PieceLabel }
   | { readonly id: number; readonly kind: 'pass'; readonly side: Side }
 
 /** Entrées de journal pour les événements d'une action (les simples déplacements sont omis). */
@@ -114,7 +120,18 @@ export function logEntriesFor(before: GameState, events: readonly GameEvent[], f
     const id = firstId + entries.length
     switch (event.type) {
       case 'attack':
-        entries.push({ id, kind: 'attack', attacker: label(event.pieceId), target: label(event.targetId), damage: event.damage })
+      case 'riposte':
+        entries.push({
+          id,
+          kind: event.type,
+          attacker: label(event.pieceId),
+          target: label(event.targetId),
+          damage: event.damage,
+        })
+        break
+      case 'shieldBlock':
+      case 'promote':
+        entries.push({ id, kind: event.type, piece: label(event.pieceId) })
         break
       case 'capture':
         entries.push({ id, kind: 'capture', target: label(event.pieceId) })

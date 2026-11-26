@@ -26,16 +26,29 @@ export interface BoardProps {
   /** Le joueur peut agir (c'est son tour). */
   readonly interactive: boolean
   readonly onCellClick: (pos: Pos) => void
+  /** Zone de déploiement à mettre en évidence (écran de placement). */
+  readonly zone?: readonly Pos[]
 }
 
-type CellRole = 'move' | 'attack' | 'landing'
+type CellRole = 'move' | 'attack' | 'landing' | 'deploy'
 
-export function Board({ state, selectedId, highlights, lastMove, hits, hitKey, interactive, onCellClick }: BoardProps) {
+export function Board({
+  state,
+  selectedId,
+  highlights,
+  lastMove,
+  hits,
+  hitKey,
+  interactive,
+  onCellClick,
+  zone = [],
+}: BoardProps) {
   const { t } = useTranslation()
   const { board } = state
   const cells = useMemo(() => boardCells(board), [board])
 
   const roles = new Map<string, CellRole>()
+  for (const p of zone) roles.set(posKey(p), 'deploy')
   for (const p of highlights.moves) roles.set(posKey(p), 'move')
   for (const p of highlights.landings) roles.set(posKey(p), 'landing')
   for (const p of highlights.attacks) roles.set(posKey(p), 'attack')
@@ -57,6 +70,7 @@ export function Board({ state, selectedId, highlights, lastMove, hits, hitKey, i
           atk: piece.atk,
         }),
       )
+      if (piece.shieldActive) parts.push(t('a11y.shield'))
     }
     if (role) parts.push(t(`a11y.${role}`))
     return parts.join(', ')
@@ -82,6 +96,9 @@ export function Board({ state, selectedId, highlights, lastMove, hits, hitKey, i
       </g>
 
       <g className="marks" aria-hidden="true">
+        {zone.map((p) => (
+          <rect key={`zone-${posKey(p)}`} className="mark-zone" x={p.x * CELL} y={p.y * CELL} width={CELL} height={CELL} />
+        ))}
         {lastMove &&
           [lastMove.from, lastMove.to].map((p, i) => (
             <rect key={`last-${i}`} className="mark-last" x={p.x * CELL} y={p.y * CELL} width={CELL} height={CELL} />
@@ -188,6 +205,9 @@ function PieceView({ piece, isHero, isTarget, hitKey }: PieceViewProps) {
       </g>
       {isHero && (
         <path className="badge-hero" d="M6 24 L8 9 L14 15 L18 6 L22 15 L28 9 L30 24 Z" />
+      )}
+      {piece.shieldActive && (
+        <path className="badge-shield" d="M6 40 L16 36 L26 40 V50 C26 57 21 61 16 63 C11 61 6 57 6 50 Z" />
       )}
       {isTarget && (
         <g className="badge-target">

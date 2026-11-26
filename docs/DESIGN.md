@@ -2,7 +2,7 @@
 
 > Nom de travail provisoire. Ce document fixe les règles décidées ; toute
 > évolution des règles doit être reportée ici. Les règles marquées ✅ sont
-> implémentées et testées dans `src/engine/`.
+> implémentées et testées (`src/engine/` pour les règles, `src/run/` pour le run).
 
 ## 1. Concept
 
@@ -13,19 +13,36 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 
 ## 2. Structure d'un run
 
-- **Carte à embranchements** : à chaque étape, le joueur choisit le prochain nœud.
+- **Carte à embranchements** (à venir) : à chaque étape, le joueur choisit le
+  prochain nœud. Pour l'instant, un run enchaîne les 5 niveaux de démonstration
+  dans l'ordre.
 - **Types de nœuds** : combat, survie, capture, boss (fin d'acte).
-- **Héros** : en début de run, le joueur choisit une **classe de départ**. Chaque
-  classe a un héros (une pièce) avec un pouvoir unique et une armée de départ.
-- **Défaite** : le run est perdu si le **héros meurt**.
-- **Entre deux niveaux** :
+- **Héros** ✅ : en début de run, le joueur choisit une **classe de départ**. Chaque
+  classe a un héros (une pièce) avec un pouvoir de départ et une armée.
+
+  | Classe | Héros | Pouvoirs du héros | Armée de départ |
+  |---|---|---|---|
+  | Souverain | Roi (4 PV, 1 ATK) | Riposte | Tour, Cavalier, 2 Pions |
+  | Chevalière | Cavalier (4 PV, 2 ATK) | Bouclier, Vigueur ×2 | 2 Fous, 1 Pion |
+
+- **Armée** ✅ : **6 pièces au maximum**, héros compris.
+- **Défaite** ✅ : **tout niveau perdu met fin au run** (mort du héros, temps
+  écoulé, blocage).
+- **Entre deux niveaux** ✅ :
   - une pièce morte est **perdue pour le reste du run** ;
-  - les pièces survivantes **récupèrent tous leurs PV** ;
-  - récompense : **choisir 1 option parmi 3** (nouvelle pièce, ou pouvoir à appliquer
-    à une pièce possédée).
-- **Progression** : roguelite par défaut (les runs débloquent des classes, pièces,
-  pouvoirs qui entrent ensuite dans les tirages). **Option pour la désactiver**
-  (mode roguelike pur : rien n'est conservé hors statistiques).
+  - les pièces survivantes **récupèrent tous leurs PV** et gardent leurs pouvoirs ;
+  - récompense : **choisir 1 option parmi 3**, nouvelle pièce ou pouvoir à donner à
+    une pièce de l'armée (le joueur choisit laquelle parmi celles qui peuvent le
+    recevoir).
+- **Tirage des récompenses** ✅ : 3 options distinctes, **au moins une pièce et au
+  moins un pouvoir** (tant que l'armée n'est pas complète et qu'un pouvoir peut
+  servir). Rareté des pièces : Pion 35, Cavalier 22, Fou 22, Tour 15, Dame 6
+  (jamais de Roi). Seuls les pouvoirs utilisables par au moins une pièce sont
+  proposés ; Vigueur et Force un peu plus souvent.
+- **Progression** (à venir) : roguelite par défaut (les runs débloquent des classes,
+  pièces, pouvoirs qui entrent ensuite dans les tirages). **Option pour la
+  désactiver** (mode roguelike pur : rien n'est conservé hors statistiques).
+- **Entraînement** ✅ : chaque niveau se rejoue à volonté avec une armée fixe, hors run.
 
 ## 3. Niveaux (mini-problèmes)
 
@@ -34,8 +51,10 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
   Le vide se comporte comme l'eau : on ne s'y arrête pas et on ne le traverse pas
   en glissant ; le Cavalier peut le sauter.
 - Chaque gabarit définit la **direction « avant »** de chaque camp (pour les pions).
-- Chaque gabarit définit une **zone de déploiement** : le joueur y place ses
-  pièces avant le début du niveau (à implémenter).
+- Chaque gabarit définit une **zone de déploiement** ✅ (au moins 6 cases) : avant
+  le niveau, le jeu **propose un placement** (héros au centre de la rangée arrière,
+  Pions devant, les autres près du héros) que le joueur peut retoucher : toucher une
+  pièce, puis une case de la zone (ou une autre pièce pour les échanger).
 
 ### Génération (hybride)
 - Formes de plateau et gabarits **faits main**.
@@ -100,9 +119,20 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
     (8 directions)**, **au choix du joueur** (l'IA choisit pour l'ennemi). Sa propre
     case compte comme libre. S'il n'y en a aucune, il **reste sur sa case**.
 
-### Exemples de pouvoirs (à équilibrer)
-+1 PV, +1 ATK, +1 de portée, traverser la forêt, bouclier (annule la 1re attaque
-reçue), riposte, saut, promotion du pion.
+### Pouvoirs ✅
+Gagnés en récompense (ou portés par le héros dès le départ), conservés tout le run.
+
+| Pouvoir | Effet | Pièces | Max |
+|---|---|---|---|
+| Vigueur | +1 PV max | toutes | 3 |
+| Force | +1 ATK | toutes | 2 |
+| Forestier | La forêt n'arrête plus ses glissades (ni le double pas du Pion) | Dame, Tour, Fou, Pion | 1 |
+| Patins | Ne glisse pas sur la glace | toutes sauf Cavalier | 1 |
+| Allonge | Roi : se déplace et attaque jusqu'à 2 cases. Pion : une case de plus vers l'avant (3 au premier coup) | Roi, Pion | 1 |
+| Bouclier | La première attaque reçue à chaque niveau ne fait aucun dégât (riposte comprise) | toutes | 1 |
+| Riposte | Si la pièce survit à une attaque et que l'attaquant finit sur une case voisine, elle le frappe aussitôt (sans riposte en retour) | toutes | 1 |
+| Promotion | Un Pion qui atteint la dernière rangée (plus aucune case devant lui dans sa colonne) devient une Dame **pour tout le run** ; ses PV montent d'autant que son maximum | Pion | 1 |
+| Perçage | Ses glissades traversent la première pièce alliée (pas si elle se tient dans une forêt qui l'arrêterait). Si cet allié est juste devant une cible qui survit, l'attaquant reste sur place | Dame, Tour, Fou | 1 |
 
 ## 5. IA ennemie ✅
 - Recherche **minimax avec élagage alpha-bêta** (`src/engine/ai/`), calculée dans un
@@ -148,13 +178,15 @@ src/
     rng.ts         hasard à graine
     testing.ts     aides pour les tests (plateaux en texte)
     ai/            IA (minimax alpha-bêta) et son Web Worker
-    powers/        (à venir) pouvoirs = modificateurs
-  content/         niveaux de démonstration (gabarits, classes et pouvoirs à venir)
-  run/             (à venir) carte, récompenses, héros, déblocages
+    powers/        pouvoirs : définitions, statistiques dérivées, règles d'attribution
+  content/         niveaux de démonstration (plateau, ennemis, zone de déploiement)
+  run/             run : classes, armée, déploiement, récompenses, enchaînement
+                   (carte et déblocages à venir)
   ui/              interface React/SVG
     board/         plateau, terrains, pièces vectorielles
-    game/          déroulement d'un niveau (clics, tour de l'IA, journal)
-    screens/       accueil, choix du niveau, partie, fin de niveau
+    game/          déroulement d'un combat (clics, tour de l'IA, journal)
+    screens/       accueil, entraînement, partie
+    run/           choix de la classe, déploiement, récompense, bilan
   i18n/            traductions FR/EN
 ```
 
@@ -169,16 +201,23 @@ testLevel({
 ```
 
 ## 7. Interface ✅
-- **Écrans** : accueil (langue), choix du niveau, partie, fenêtre de fin
-  (niveau suivant, recommencer, retour aux niveaux).
+- **Écrans** : accueil (langue), **run** (choix de la classe → déploiement →
+  combat → récompense → … → bilan), **entraînement** (choix du niveau → partie →
+  fenêtre de fin : niveau suivant, recommencer, retour aux niveaux).
+- **Run** : pas de « Recommencer » pendant un combat ; « Abandonner » demande
+  confirmation. Le bilan donne les niveaux réussis et l'armée finale.
+- **Récompense** : 3 cartes ; pour un pouvoir, le joueur choisit ensuite la pièce
+  (seules celles qui peuvent le recevoir sont actives), puis valide.
 - **Jouer** : toucher une de ses pièces affiche ses options : **point** = case où
   aller, **cadre rouge** = pièce à attaquer, **cadre bleu pointillé** = case
   d'atterrissage à choisir quand la cible survit. Toucher la pièce à nouveau
   l'annule ; toucher une autre pièce la sélectionne.
 - **Sur chaque pièce** : barre de PV (verte pour le joueur, rouge pour l'ennemi),
-  pastille d'ATK, couronne pour le héros, viseur pour la cible.
-- **Panneau** : tour en cours, consigne, fiche de la pièce choisie, journal des
-  attaques, captures et glissades, légende des terrains.
+  pastille d'ATK, couronne pour le héros, viseur pour la cible, écusson bleu tant
+  que le Bouclier est actif.
+- **Panneau** : tour en cours, consigne, fiche de la pièce choisie (avec ses
+  pouvoirs), journal (attaques, ripostes, boucliers, captures, glissades,
+  promotions), légende des terrains.
 - Le dernier déplacement est surligné ; une pièce touchée clignote en rouge.
 - Accessible au clavier (cases actives focalisables, Entrée/Espace) et aux
   lecteurs d'écran (chaque case est décrite). Mouvements réduits respectés.
@@ -190,6 +229,12 @@ testLevel({
    mort du héros, blocage.
 3. ✅ IA (minimax alpha-bêta dans un Web Worker, réglable par niveau).
 4. ✅ Interface SVG responsive, FR/EN, clair/sombre.
-5. ◐ 5 niveaux de démonstration enchaînés. Reste : choix de récompense entre
-   les niveaux, 2 classes de héros, carte à embranchements.
+5. ✅ Run de 5 niveaux avec déploiement, récompenses (9 pouvoirs, nouvelles
+   pièces) et 2 classes de héros.
 6. Sauvegarde locale (IndexedDB).
+
+### Ensuite
+- Carte à embranchements et types de nœuds.
+- Déblocages roguelite (désactivables).
+- Équilibrage du run : dans les parties simulées, la plupart des runs échouent au
+  niveau 5 (« Le gardien », temps écoulé). À confirmer par des parties humaines.

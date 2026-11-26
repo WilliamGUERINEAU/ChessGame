@@ -6,9 +6,9 @@ import {
   seedFromString,
   type Action,
   type GameState,
+  type LevelDefinition,
   type Pos,
 } from '../../engine'
-import type { LevelContent } from '../../content/levels'
 import { getAiClient } from '../aiClient'
 import {
   highlightsFor,
@@ -24,6 +24,15 @@ import {
 /** Délai minimal avant le coup ennemi, pour que le joueur voie son propre coup. */
 const ENEMY_MIN_DELAY_MS = 550
 const LOG_SIZE = 30
+
+/** Tout ce qu'il faut pour jouer un combat, en entraînement comme dans un run. */
+export interface BattleSetup {
+  readonly definition: LevelDefinition
+  readonly aiDepth: number
+  readonly aiAggression: number
+  /** Graine des choix de l'IA (avec le nombre d'actions jouées). */
+  readonly seedKey: string
+}
 
 export interface GameModel {
   readonly state: GameState
@@ -41,9 +50,9 @@ type Message =
   | { readonly type: 'play'; readonly action: Action; readonly from: GameState }
   | { readonly type: 'select'; readonly selection: Selection }
 
-function initialModel(level: LevelContent): GameModel {
+function initialModel(setup: BattleSetup): GameModel {
   return {
-    state: createLevel(level.definition),
+    state: createLevel(setup.definition),
     selection: NO_SELECTION,
     log: [],
     lastMove: null,
@@ -66,7 +75,9 @@ function reducer(model: GameModel, message: Message): GameModel {
         selection: NO_SELECTION,
         log: [...entries.reverse(), ...model.log].slice(0, LOG_SIZE),
         lastMove: lastMoveOf(events),
-        hits: events.flatMap((event) => (event.type === 'attack' ? [event.targetId] : [])),
+        hits: events.flatMap((event) =>
+          event.type === 'attack' || event.type === 'riposte' ? [event.targetId] : [],
+        ),
         plies: model.plies + 1,
       }
     }
@@ -85,22 +96,23 @@ export interface GameController {
 }
 
 /**
- * État et déroulement d'un niveau : clics du joueur, tour de l'IA (dans un worker),
+ * État et déroulement d'un combat : clics du joueur, tour de l'IA (dans un worker),
  * journal. Pour recommencer, remonter le composant (changer sa `key`).
  */
-export function useGame(level: LevelContent, attempt: number): GameController {
-  const [model, dispatch] = useReducer(reducer, level, initialModel)
+export function useGame(setup: BattleSetup): GameController {
+  const [model, dispatch] = useReducer(reducer, setup, initialModel)
   const { state, selection, plies } = model
   const thinking = state.status === 'ongoing' && state.sideToMove === 'enemy'
+  const { aiDepth, aiAggression, seedKey } = setup
 
   useEffect(() => {
     if (!thinking) return
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
     const startedAt = performance.now()
-    const seed = seedFromString(`${level.id}:${attempt}:${plies}`)
+    const seed = seedFromString(`${seedKey}:${plies}`)
     void getAiClient()
-      .choose(state, { depth: level.aiDepth, aggression: level.aiAggression, seed })
+      .choose(state, { depth: aiDepth, aggression: aiAggression, seed })
       .then((action) => {
         if (cancelled) return
         const wait = Math.max(0, ENEMY_MIN_DELAY_MS - (performance.now() - startedAt))
@@ -110,7 +122,7 @@ export function useGame(level: LevelContent, attempt: number): GameController {
       cancelled = true
       if (timer !== undefined) clearTimeout(timer)
     }
-  }, [thinking, state, level, attempt, plies])
+  }, [thinking, state, aiDepth, aiAggression, seedKey, plies])
 
   const clickCell = useCallback(
     (pos: Pos) => {

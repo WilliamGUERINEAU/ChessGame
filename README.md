@@ -8,9 +8,16 @@ Règles et choix de conception : [docs/DESIGN.md](docs/DESIGN.md).
 ## Jouer
 
 En ligne : <https://williamguerineau.github.io/ChessGame/> (installable comme une
-application, jouable hors ligne). La démo propose cinq niveaux faits main :
-touchez une de vos pièces pour voir où elle peut aller (point), qui elle peut
-attaquer (cadre rouge) et, si la cible survit, où atterrir (cadre bleu).
+application, jouable hors ligne).
+
+- **Nouvelle partie** : choisissez votre héros (Souverain ou Chevalière), placez
+  votre armée, puis enchaînez cinq niveaux. Après chaque victoire, choisissez une
+  récompense : une nouvelle pièce ou un pouvoir. Si un niveau est perdu, le run
+  s'arrête.
+- **Entraînement** : rejouez chaque niveau avec une armée fixe.
+
+En combat, touchez une de vos pièces pour voir où elle peut aller (point), qui
+elle peut attaquer (cadre rouge) et, si la cible survit, où atterrir (cadre bleu).
 
 ## Développement
 
