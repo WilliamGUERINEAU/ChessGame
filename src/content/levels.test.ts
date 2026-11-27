@@ -19,18 +19,21 @@ import fr from '../i18n/locales/fr.json'
 
 /**
  * Partie IA contre IA : l'ennemi joue avec les réglages du niveau, le joueur est
- * simulé par une IA qui anticipe 4 demi-coups (un joueur humain attentif fait mieux).
+ * simulé par une IA qui anticipe 4 demi-coups et vient au contact (un humain attentif fait mieux).
  */
 function selfPlay(level: LevelContent, seed: number, maxPlies = 120) {
   let state = createLevel(level.definition)
   const rng = createRng(seed)
+  const survive = level.definition.goal.kind === 'survive'
   for (let ply = 0; ply < maxPlies && state.status === 'ongoing'; ply++) {
     const enemy = state.sideToMove === 'enemy'
-    const action = chooseAction(state, {
-      depth: enemy ? level.aiDepth : 4,
-      aggression: enemy ? level.aiAggression : undefined,
-      rng,
-    })
+    const action = chooseAction(
+      state,
+      enemy
+        ? { depth: level.aiDepth, aggression: level.aiAggression, rng }
+        : // En survie, le joueur simulé garde son héros en retrait.
+          { depth: 4, rng, playerApproach: survive ? 0.3 : 2, heroApproach: survive ? 0 : 0.5 },
+    )
     state = applyAction(state, action).state
   }
   return state
@@ -67,10 +70,14 @@ describe('niveaux de démonstration', () => {
     '%s : aucune pièce placée dans la zone ne peut attaquer dès son premier coup',
     (_id, level) => {
       const enemies = level.definition.units.filter((unit) => unit.side === 'enemy')
+      // Les murs sont décoratifs : la zone doit rester sûre même sans eux.
+      const withoutWalls = level.definition.terrain.map((row) => row.replaceAll('#', '.'))
+      for (const terrain of [level.definition.terrain, withoutWalls])
       for (const cell of level.deployment) {
         for (const [type, powers] of PROBES) {
           const state = createLevel({
             ...level.definition,
+            terrain,
             units: [...enemies, { type, side: 'player', at: cell, powers }],
             hero: cell,
             goal: { kind: 'eliminate' },

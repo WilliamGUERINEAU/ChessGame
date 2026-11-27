@@ -74,8 +74,8 @@ describe('déploiement', () => {
   })
 
   it('le héros au centre de la rangée arrière, les Pions devant', () => {
-    expect(placement.a1).toEqual({ x: 3, y: 6 })
-    for (const pawn of run.army.filter((piece) => piece.type === 'pawn')) expect(placement[pawn.id].y).toBe(5)
+    expect(placement.a1).toEqual({ x: 4, y: 9 })
+    for (const pawn of run.army.filter((piece) => piece.type === 'pawn')) expect(placement[pawn.id].y).toBe(8)
   })
 
   it('est déterministe', () => {
@@ -83,8 +83,9 @@ describe('déploiement', () => {
   })
 
   it('déplacer une pièce sur une case libre, ou échanger avec une pièce', () => {
-    const moved = movePlacement(placement, 'a1', { x: 0, y: 5 }, zone)
-    expect(moved.a1).toEqual({ x: 0, y: 5 })
+    const free = zone.find((cell) => !Object.values(placement).some((p) => posKey(p) === posKey(cell)))!
+    const moved = movePlacement(placement, 'a1', free, zone)
+    expect(moved.a1).toEqual(free)
     const pawnCell = placement.a4
     const swapped = movePlacement(placement, 'a1', pawnCell, zone)
     expect(swapped.a1).toEqual(pawnCell)

@@ -17,23 +17,23 @@
     "number": "Niveau {{number}}",
     "first-steps": {
       "name": "Premiers pas",
-      "description": "Un Pion et un Fou derrière un mur. Passez par les brèches pour les atteindre."
+      "description": "Un Pion et un Fou vous attendent sur les côtés. Apprenez à déplacer vos pièces et à attaquer."
     },
     "the-bend": {
       "name": "Le coude",
-      "description": "Un plateau en L. Les murs du coude cachent les ennemis ; la forêt arrête les pièces qui glissent."
+      "description": "Un plateau en L : les ennemis attendent dans le bras du haut. La forêt arrête les pièces qui glissent."
     },
     "frozen-lake": {
       "name": "Lac gelé",
-      "description": "Les ennemis attendent au-delà du lac. La glace fait glisser vos pièces ; l’eau ne se franchit qu’en sautant."
+      "description": "Un lac gelé au milieu de la carte. La glace fait glisser vos pièces ; l’eau ne se franchit qu’en sautant."
     },
     "hold-the-line": {
       "name": "Tenir la ligne",
-      "description": "Quatre ennemis fondent sur vous. Gardez votre héros en vie pendant 6 tours."
+      "description": "Quatre ennemis fondent sur vous. Gardez votre héros en vie pendant 7 tours."
     },
     "the-warden": {
       "name": "Le gardien",
-      "description": "Abattez la Tour gardienne (5 PV) avant la fin du 12ᵉ tour."
+      "description": "Abattez la Tour gardienne (5 PV) avant la fin du 18ᵉ tour."
     },
     "subtitle": "Rejouez chaque niveau avec une armée fixe, autant de fois que vous voulez."
   },

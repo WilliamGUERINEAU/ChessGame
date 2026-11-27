@@ -17,23 +17,23 @@
     "number": "Level {{number}}",
     "first-steps": {
       "name": "First steps",
-      "description": "A pawn and a bishop behind a wall. Go through the gaps to reach them."
+      "description": "A pawn and a bishop wait on the sides. Learn to move your pieces and attack."
     },
     "the-bend": {
       "name": "The bend",
-      "description": "An L-shaped board. The walls at the bend hide the enemies; forests stop sliding pieces."
+      "description": "An L-shaped board: the enemies wait in the upper arm. Forests stop sliding pieces."
     },
     "frozen-lake": {
       "name": "Frozen lake",
-      "description": "The enemies wait beyond the lake. Ice makes your pieces slide; water can only be jumped over."
+      "description": "A frozen lake in the middle of the map. Ice makes your pieces slide; water can only be jumped over."
     },
     "hold-the-line": {
       "name": "Hold the line",
-      "description": "Four enemies are closing in. Keep your hero alive for 6 rounds."
+      "description": "Four enemies are closing in. Keep your hero alive for 7 rounds."
     },
     "the-warden": {
       "name": "The warden",
-      "description": "Take down the warden rook (5 HP) before the end of round 12."
+      "description": "Take down the warden rook (5 HP) before the end of round 18."
     },
     "subtitle": "Replay each level with a fixed army, as often as you like."
   },

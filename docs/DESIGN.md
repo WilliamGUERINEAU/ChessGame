@@ -59,12 +59,15 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
   le niveau, le jeu **propose un placement** (héros au centre de la rangée arrière,
   Pions devant, les autres près du héros) que le joueur peut retoucher : toucher une
   pièce, puis une case de la zone (ou une autre pièce pour les échanger).
-- **Pas de prise au premier coup** ✅ : les zones sont hors de portée des ennemis.
-  Depuis n'importe quelle case de zone, aucune pièce du joueur ne peut attaquer à son
-  premier coup, même une Dame avec Forestier, un Roi ou un Pion avec Allonge. Murs
-  et eau coupent les lignes ; les ennemis sont placés hors des diagonales qui
-  passent par les brèches. Un test le vérifie pour chaque niveau. L'ennemi, lui,
-  peut punir un placement imprudent dès son premier coup.
+- **Cartes** ✅ : environ **9 × 10**, zone de départ de **3 × 2 cases au centre de
+  la dernière rangée**. Les murs y sont **décoratifs** : ils ne servent jamais à
+  couper les lignes entre la zone et les ennemis.
+- **Pas de prise au premier coup** ✅ : depuis n'importe quelle case de zone, aucune
+  pièce du joueur ne peut attaquer à son premier coup, même une Dame avec
+  Forestier, un Roi ou un Pion avec Allonge. Les ennemis partent donc des côtés,
+  hors des colonnes et des diagonales qui partent de la zone. Un test le vérifie
+  pour chaque niveau, avec et sans les murs. L'ennemi, lui, peut punir un placement
+  imprudent dès son premier coup.
 
 ### Génération (hybride)
 - Formes de plateau et gabarits **faits main**.
