@@ -1,5 +1,6 @@
 import type { Direction, GoalDefinition, LevelDefinition, Pos, Side, UnitSpec } from '../engine'
 import { posKey, unitsFromAscii } from '../engine'
+import { withStartingPowers } from './rules'
 
 /**
  * Un niveau jouable : sa définition pour le moteur et quelques réglages.
@@ -36,6 +37,8 @@ interface LevelSpec {
   readonly stats?: Readonly<Record<string, Partial<Pick<UnitSpec, 'id' | 'hp' | 'maxHp' | 'atk'>>>>
   readonly aiDepth?: number
   readonly aiAggression?: number
+  /** Renforts : au tour `round`, les pièces écrites en texte comme `units` arrivent. */
+  readonly reinforcements?: readonly { readonly round: number; readonly units: readonly string[] }[]
 }
 
 function cellsMarked(rows: readonly string[]): Pos[] {
@@ -43,7 +46,11 @@ function cellsMarked(rows: readonly string[]): Pos[] {
 }
 
 function level(id: string, spec: LevelSpec): LevelContent {
-  const units = unitsFromAscii(spec.units).map((unit) => ({ ...unit, ...spec.stats?.[posKey(unit.at)] }))
+  const units = unitsFromAscii(spec.units).map((unit) => withStartingPowers({ ...unit, ...spec.stats?.[posKey(unit.at)] }))
+  const reinforcements = (spec.reinforcements ?? []).map((wave) => ({
+    round: wave.round,
+    units: unitsFromAscii(wave.units).map(withStartingPowers),
+  }))
   return {
     id,
     deployment: cellsMarked(spec.deployment),
@@ -55,6 +62,7 @@ function level(id: string, spec: LevelSpec): LevelContent {
       hero: spec.hero,
       goal: spec.goal,
       forward: spec.forward ?? { player: 'up', enemy: 'down' },
+      ...(reinforcements.length > 0 ? { reinforcements } : {}),
     },
   }
 }
@@ -190,6 +198,12 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
     goal: { kind: 'survive', rounds: 5 },
+    // Survie : l'ennemi fonce sur le héros, et des renforts surgissent sur les flancs.
+    aiAggression: 2,
+    reinforcements: [
+      { round: 2, units: ['', '', '', '', '', '', 'n.......n'] },
+      { round: 3, units: ['....q....', '', '', '', '', '.p.....p.'] },
+    ],
   }),
 
   level('the-warden', {

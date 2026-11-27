@@ -200,6 +200,15 @@ describe('récompenses', () => {
     expect(after.levelIndex).toBe(1)
   })
 
+  it('un Pion gagné en récompense naît avec Promotion, qui n’est alors plus proposée', () => {
+    const run: RunState = { ...startRun('sovereign', 1, LEVELS.length), phase: 'reward', rewardOptions: [{ kind: 'piece', type: 'pawn' }] }
+    const after = applyReward(run, { kind: 'piece', type: 'pawn' })
+    expect(after.army.at(-1)).toEqual({ id: 'a3', type: 'pawn', powers: ['promotion'] })
+    for (let seed = 1; seed <= 30; seed++) {
+      expect(drawRewards(after.army, createRng(seed))).not.toContainEqual({ kind: 'power', power: 'promotion' })
+    }
+  })
+
   it('un pouvoir va sur la pièce choisie, si elle peut le recevoir', () => {
     const run: RunState = {
       ...startRun('sovereign', 1, LEVELS.length),

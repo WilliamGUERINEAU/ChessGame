@@ -14,7 +14,7 @@ import {
 } from '../../engine'
 import type { Highlights } from '../game/interaction'
 import { PieceGlyph } from './PieceGlyph'
-import { hasPromotionPawn } from './promotion'
+import { hasPromotionPawn, nextReinforcements } from './promotion'
 import { CELL, TerrainTile } from './TerrainTile'
 
 export interface BoardProps {
@@ -59,6 +59,19 @@ export function Board({
   )
   const promotionKeys = new Set(promotion.map(posKey))
 
+  // Ligne de promotion ennemie, au bord opposé, si un Pion ennemi peut se promouvoir.
+  const enemyForward = DIRECTION_VECTORS[state.forward.enemy]
+  const showEnemyPromotion = hasPromotionPawn(state, 'enemy')
+  const enemyPromotion = useMemo(
+    () => (showEnemyPromotion ? promotionCells(board, enemyForward) : []),
+    [showEnemyPromotion, board, enemyForward],
+  )
+  const enemyPromotionKeys = new Set(enemyPromotion.map(posKey))
+
+  // Cases où la prochaine vague de renforts va apparaître.
+  const wave = nextReinforcements(state)
+  const reinforcementKeys = new Set(wave?.pieces.map((piece) => posKey(piece.pos)) ?? [])
+
   const roles = new Map<string, CellRole>()
   for (const p of zone) roles.set(posKey(p), 'deploy')
   for (const p of highlights.moves) roles.set(posKey(p), 'move')
@@ -85,6 +98,8 @@ export function Board({
       if (piece.shieldActive) parts.push(t('a11y.shield'))
     }
     if (promotionKeys.has(posKey(p))) parts.push(t('a11y.promotion'))
+    if (enemyPromotionKeys.has(posKey(p))) parts.push(t('a11y.enemyPromotion'))
+    if (wave && reinforcementKeys.has(posKey(p))) parts.push(t('a11y.reinforcement', { round: wave.round }))
     if (role) parts.push(t(`a11y.${role}`))
     return parts.join(', ')
   }
@@ -114,6 +129,12 @@ export function Board({
         ))}
         {promotion.map((p) => (
           <PromotionMark key={`promo-${posKey(p)}`} pos={p} forward={forward} />
+        ))}
+        {enemyPromotion.map((p) => (
+          <PromotionMark key={`epromo-${posKey(p)}`} pos={p} forward={enemyForward} enemy />
+        ))}
+        {wave?.pieces.map((piece) => (
+          <ReinforcementMark key={`reinf-${piece.id}`} pos={piece.pos} round={wave.round} />
         ))}
         {lastMove &&
           [lastMove.from, lastMove.to].map((p, i) => (
@@ -277,7 +298,7 @@ function HpBar({ hp, maxHp }: { hp: number; maxHp: number }) {
  * Case de la ligne de promotion : un liseré sur le bord avant (côté où le Pion
  * avance) et une petite couronne près de ce bord.
  */
-export function PromotionMark({ pos, forward }: { pos: Pos; forward: Pos }) {
+export function PromotionMark({ pos, forward, enemy = false }: { pos: Pos; forward: Pos; enemy?: boolean }) {
   const x = pos.x * CELL
   const y = pos.y * CELL
   const thickness = 7
@@ -292,9 +313,23 @@ export function PromotionMark({ pos, forward }: { pos: Pos; forward: Pos }) {
   const cx = x + CELL / 2 + forward.x * 30
   const cy = y + CELL / 2 + forward.y * 30
   return (
-    <g className="mark-promotion">
+    <g className={enemy ? 'mark-promotion mark-promotion--enemy' : 'mark-promotion'}>
       <rect {...edge} />
       <path transform={`translate(${cx} ${cy})`} d="M-10 6 L-11 -6 L-5 -1 L0 -9 L5 -1 L11 -6 L10 6 Z" />
+    </g>
+  )
+}
+
+/** Case d'arrivée de renforts ennemis : cadre en pointillés et, au centre, le tour d'arrivée. */
+export function ReinforcementMark({ pos, round }: { pos: Pos; round: number }) {
+  const x = pos.x * CELL
+  const y = pos.y * CELL
+  return (
+    <g className="mark-reinforce">
+      <rect x={x + 6} y={y + 6} width={CELL - 12} height={CELL - 12} rx="12" />
+      <text x={x + CELL / 2} y={y + CELL / 2} textAnchor="middle" dominantBaseline="central">
+        {round}
+      </text>
     </g>
   )
 }

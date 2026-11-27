@@ -915,6 +915,25 @@ button.army-item.is-selected {
   opacity: 0.85;
 }
 
+.mark-promotion--enemy rect,
+.mark-promotion--enemy path {
+  fill: var(--danger);
+}
+
+.mark-reinforce rect {
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-dasharray: 9 6;
+}
+
+.mark-reinforce text {
+  fill: var(--danger);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
 .turn-alert {
   margin: 6px 0 0;
   font-weight: 600;

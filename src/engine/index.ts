@@ -73,5 +73,7 @@ export {
   unitsFromAscii,
   type GameState,
   type LevelDefinition,
+  type Reinforcement,
+  type ReinforcementSpec,
   type UnitSpec,
 } from './state'

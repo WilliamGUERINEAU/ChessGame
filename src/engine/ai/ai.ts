@@ -66,6 +66,11 @@ const BONUS_ATK_VALUE = 1
 const SHIELD_VALUE = 1.5
 /** Valeur supplémentaire de chaque PV du héros : l'ennemi cherche à l'user. */
 const HERO_HP_VALUE = 3
+/**
+ * En survie, l'ennemi n'a qu'un but : abattre le héros. Chaque PV du héros vaut
+ * plus qu'une pièce mineure, donc l'ennemi sacrifie volontiers une pièce pour le toucher.
+ */
+const SURVIVE_HERO_HP_VALUE = 8
 /** Valeur supplémentaire de la cible d'un niveau de capture. */
 const TARGET_BONUS = 6
 /** Poids de l'approche des pièces du joueur vers leur objectif (parties IA contre IA). */
@@ -186,12 +191,13 @@ function positionForEnemy(state: GameState, weights: Weights): number {
   const enemies = state.pieces.filter((piece) => piece.side === 'enemy')
   const objectives = targetId ? enemies.filter((piece) => piece.id === targetId) : enemies
 
+  const heroHpValue = state.goal.kind === 'survive' ? SURVIVE_HERO_HP_VALUE : HERO_HP_VALUE
   let score = 0
   for (const piece of state.pieces) {
     let value = TYPE_VALUE[piece.type] + piece.hp * HP_VALUE
     value += Math.max(0, piece.atk - PIECES[piece.type].atk) * BONUS_ATK_VALUE
     value += piece.powers.length * POWER_VALUE + (piece.shieldActive ? SHIELD_VALUE : 0)
-    if (piece.id === state.heroId) value += piece.hp * HERO_HP_VALUE
+    if (piece.id === state.heroId) value += piece.hp * heroHpValue
     if (piece.id === targetId) value += TARGET_BONUS
     score += piece.side === 'enemy' ? value : -value
   }

@@ -109,7 +109,7 @@ export type LogEntry =
   | { readonly id: number; readonly kind: 'capture'; readonly target: PieceLabel }
   | {
       readonly id: number
-      readonly kind: 'iceSlide' | 'shieldBlock' | 'promote' | 'push' | 'momentum'
+      readonly kind: 'iceSlide' | 'shieldBlock' | 'promote' | 'push' | 'momentum' | 'reinforce'
       readonly piece: PieceLabel
     }
   | { readonly id: number; readonly kind: 'heal'; readonly piece: PieceLabel; readonly amount: number }
@@ -118,7 +118,9 @@ export type LogEntry =
 /** Entrées de journal pour les événements d'une action (les simples déplacements sont omis). */
 export function logEntriesFor(before: GameState, events: readonly GameEvent[], firstId: number): LogEntry[] {
   const label = (id: string): PieceLabel => {
-    const piece = before.pieces.find((candidate) => candidate.id === id)
+    const piece =
+      before.pieces.find((candidate) => candidate.id === id) ??
+      before.reinforcements.find((candidate) => candidate.piece.id === id)?.piece
     return piece ? { type: piece.type, side: piece.side } : { type: 'pawn', side: 'enemy' }
   }
   const entries: LogEntry[] = []
@@ -143,6 +145,7 @@ export function logEntriesFor(before: GameState, events: readonly GameEvent[], f
       case 'promote':
       case 'push':
       case 'momentum':
+      case 'reinforce':
         entries.push({ id, kind: event.type, piece: label(event.pieceId) })
         break
       case 'heal':

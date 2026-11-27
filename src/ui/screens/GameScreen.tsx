@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { findPiece, type GameState, type Goal, type Piece, type Terrain } from '../../engine'
 import { enemiesCornered } from '../../engine/ai/ai'
-import { Board, PromotionMark } from '../board/Board'
-import { hasPromotionPawn } from '../board/promotion'
+import { Board, PromotionMark, ReinforcementMark } from '../board/Board'
+import { hasPromotionPawn, nextReinforcements } from '../board/promotion'
 import { PieceGlyph } from '../board/PieceGlyph'
 import { CELL, TerrainTile } from '../board/TerrainTile'
 import { Dialog, type DialogAction } from '../Dialog'
@@ -48,6 +48,7 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
   const ended = state.status !== 'ongoing'
   const selected = selection.kind === 'none' ? undefined : findPiece(state, selection.pieceId)
   const bonusPiece = game.bonusPieceId ? findPiece(state, game.bonusPieceId) : undefined
+  const wave = nextReinforcements(state)
 
   let hint = ''
   if (!ended && !game.thinking) {
@@ -107,6 +108,9 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
             </p>
             {hint && <p className="turn-hint">{hint}</p>}
             {!ended && enemiesCornered(state) && <p className="turn-alert">{t('game.cornered')}</p>}
+            {!ended && wave && (
+              <p className="turn-alert">{t('game.reinforcements', { round: wave.round, count: wave.pieces.length })}</p>
+            )}
             {(game.mustPass || bonusPiece) && (
               <button type="button" className="button-primary" onClick={game.pass}>
                 {bonusPiece ? t('game.endTurn') : t('game.pass')}
@@ -158,6 +162,28 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
                   </svg>
                   <span>
                     <strong>{t('game.promotionLine')}</strong> — {t('game.promotionRule')}
+                  </span>
+                </li>
+              )}
+              {hasPromotionPawn(state, 'enemy') && (
+                <li>
+                  <svg viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
+                    <TerrainTile pos={{ x: 0, y: 0 }} terrain="floor" />
+                    <PromotionMark pos={{ x: 0, y: 0 }} forward={{ x: 0, y: 1 }} enemy />
+                  </svg>
+                  <span>
+                    <strong>{t('game.enemyPromotionLine')}</strong> — {t('game.enemyPromotionRule')}
+                  </span>
+                </li>
+              )}
+              {wave && (
+                <li>
+                  <svg viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
+                    <TerrainTile pos={{ x: 0, y: 0 }} terrain="floor" />
+                    <ReinforcementMark pos={{ x: 0, y: 0 }} round={wave.round} />
+                  </svg>
+                  <span>
+                    <strong>{t('game.reinforcementsLegend')}</strong> — {t('game.reinforcementsRule')}
                   </span>
                 </li>
               )}
@@ -279,6 +305,7 @@ function entrySide(entry: LogEntry): string {
     case 'promote':
     case 'momentum':
     case 'heal':
+    case 'reinforce':
       return entry.piece.side
     case 'push':
       return entry.piece.side === 'player' ? 'enemy' : 'player'
@@ -303,6 +330,7 @@ function describeEntry(entry: LogEntry, t: TFunction): string {
     case 'promote':
     case 'push':
     case 'momentum':
+    case 'reinforce':
       return t(`log.${entry.kind}`, { piece: name(entry.piece) })
     case 'heal':
       return t('log.heal', { piece: name(entry.piece), amount: entry.amount })

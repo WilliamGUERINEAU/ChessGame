@@ -33,7 +33,7 @@ export type Outcome =
   | { readonly status: 'ongoing'; readonly reason: null }
   | { readonly status: 'won' | 'lost'; readonly reason: EndReason }
 
-type OutcomeInput = Pick<GameState, 'pieces' | 'goal' | 'heroId' | 'round' | 'consecutivePasses'>
+type OutcomeInput = Pick<GameState, 'pieces' | 'goal' | 'heroId' | 'round' | 'consecutivePasses' | 'reinforcements'>
 
 const ONGOING: Outcome = { status: 'ongoing', reason: null }
 const won = (reason: EndReason): Outcome => ({ status: 'won', reason })
@@ -48,7 +48,10 @@ export function evaluateOutcome(state: OutcomeInput): Outcome {
   const isAlive = (id: string) => state.pieces.some((piece) => piece.id === id)
   if (!isAlive(state.heroId)) return lost('heroDied')
 
-  const enemiesLeft = state.pieces.some((piece) => piece.side === 'enemy')
+  // Des renforts ennemis encore attendus comptent comme des ennemis restants.
+  const enemiesLeft =
+    state.pieces.some((piece) => piece.side === 'enemy') ||
+    state.reinforcements.some((reinforcement) => reinforcement.piece.side === 'enemy')
   const goal = state.goal
 
   switch (goal.kind) {

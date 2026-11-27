@@ -8,6 +8,7 @@ import {
   type PowerId,
   type Rng,
 } from '../engine'
+import { withStartingPowers } from '../content/rules'
 import { CLASSES, type ClassId } from './classes'
 
 /** Taille maximale de l'armée, héros compris. */
@@ -79,7 +80,7 @@ export function startRun(classId: ClassId, seed: number, levelCount: number): Ru
   const definition = CLASSES[classId]
   const army: ArmyPiece[] = [
     { id: 'a1', type: definition.hero.type, powers: definition.hero.powers },
-    ...definition.army.map((type, index) => ({ id: `a${index + 2}`, type, powers: [] })),
+    ...definition.army.map((type, index) => withStartingPowers({ id: `a${index + 2}`, type, powers: [] })),
   ]
   return {
     classId,
@@ -143,7 +144,7 @@ export function applyReward(run: RunState, option: RewardOption, targetId?: stri
   let nextPieceNumber = run.nextPieceNumber
   if (option.kind === 'piece') {
     if (army.length >= MAX_ARMY) throw new Error('Armée complète')
-    army = [...army, { id: `a${nextPieceNumber}`, type: option.type, powers: [] }]
+    army = [...army, withStartingPowers({ id: `a${nextPieceNumber}`, type: option.type, powers: [] })]
     nextPieceNumber += 1
   } else {
     const target = army.find((piece) => piece.id === targetId)

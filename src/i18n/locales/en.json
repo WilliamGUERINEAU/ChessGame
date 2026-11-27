@@ -29,7 +29,7 @@
     },
     "hold-the-line": {
       "name": "Hold the line",
-      "description": "Four enemies are closing in. Keep your hero alive for 5 rounds."
+      "description": "Four enemies rush your hero, and reinforcements burst in on the flanks. Hold for 5 rounds."
     },
     "the-warden": {
       "name": "The warden",
@@ -70,7 +70,13 @@
     "promotionLine": "Promotion line",
     "promotionRule": "a pawn with Promotion that reaches it becomes a queen.",
     "momentum": "Momentum: your {{piece}} moves again! Act with it, or end the turn.",
-    "endTurn": "End turn"
+    "endTurn": "End turn",
+    "reinforcements_one": "Enemy reinforcement on round {{round}}!",
+    "reinforcements_other": "{{count}} enemy reinforcements on round {{round}}!",
+    "reinforcementsLegend": "Reinforcements",
+    "reinforcementsRule": "enemies will arrive on this square on the round shown (if it is free).",
+    "enemyPromotionLine": "Enemy promotion line",
+    "enemyPromotionRule": "an enemy pawn reaching it becomes a queen."
   },
   "end": {
     "won": "Victory!",
@@ -130,7 +136,8 @@
     "crush": "Crushed against an obstacle: {{target}}: −{{damage}} HP",
     "push": "Knocked back: {{piece}}",
     "heal": "Lifesteal: {{piece}} +{{amount}} HP",
-    "momentum": "Momentum: {{piece}} moves again"
+    "momentum": "Momentum: {{piece}} moves again",
+    "reinforce": "Reinforcements: {{piece}}"
   },
   "a11y": {
     "board": "Game board",
@@ -141,7 +148,9 @@
     "landing": "can land here",
     "deploy": "deployment square",
     "shield": "shield up",
-    "promotion": "promotion line"
+    "promotion": "promotion line",
+    "enemyPromotion": "enemy promotion line",
+    "reinforcement": "enemy reinforcements on round {{round}}"
   },
   "classes": {
     "title": "Choose your hero",
@@ -187,7 +196,7 @@
     },
     "promotion": {
       "name": "Promotion",
-      "description": "A pawn reaching the far edge becomes a queen for the rest of the run."
+      "description": "A pawn reaching the far edge becomes a queen for the rest of the run. Every pawn is born with this power."
     },
     "piercing": {
       "name": "Piercing",
@@ -242,6 +251,7 @@
     "levelsCleared": "Levels cleared: {{count}} / {{total}}",
     "newRun": "New run",
     "menu": "Menu",
-    "promotionHint": "The purple edge marks your pawns’ promotion line."
+    "promotionHint": "The purple edge marks your pawns’ promotion line.",
+    "reinforcementsHint": "Enemy reinforcements will arrive on the red dashed squares."
   }
 }

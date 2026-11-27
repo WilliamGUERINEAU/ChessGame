@@ -87,7 +87,7 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 | Type | Victoire | Précisions |
 |---|---|---|
 | Combat | Capturer **toutes** les pièces adverses. | Limite de tours facultative (défaite « temps écoulé ») : 10 à 16 tours dans la démo. |
-| Survie | Tenir **N tours** avec le héros vivant (5 dans la démo). | Un tour est fini quand l'ennemi a joué. Gagné aussi si plus aucun ennemi ne reste. |
+| Survie | Tenir **N tours** avec le héros vivant (5 dans la démo). | Un tour est fini quand l'ennemi a joué. Gagné aussi si plus aucun ennemi ne reste (renforts attendus compris). L'ennemi y est **très agressif** : chaque PV du héros vaut pour lui plus qu'une pièce mineure, et il fonce (agressivité 2). |
 | Capture | Capturer **une pièce cible** précise. | Limite de tours facultative : le joueur dispose alors de N coups (12 pour la Gardienne). |
 | Boss | Vaincre un ennemi à beaucoup de PV (il peut jouer deux fois par tour). | PV personnalisables ✅ ; double action à implémenter. |
 
@@ -144,7 +144,7 @@ Gagnés en récompense (ou portés par le héros dès le départ), conservés to
 | Allonge | Roi : se déplace et attaque jusqu'à 3 cases. Pion : deux cases de plus vers l'avant (4 au premier coup) | Roi, Pion | 1 |
 | Bouclier | La première attaque reçue à chaque niveau ne fait aucun dégât (riposte comprise) | toutes | 1 |
 | Riposte | Si la pièce survit à une attaque et peut atteindre l'attaquant là où il a fini (même à distance), elle le frappe aussitôt (sans riposte en retour) | toutes | 1 |
-| Promotion | Un Pion qui atteint la dernière rangée (plus aucune case devant lui dans sa colonne) devient une Dame **pour tout le run** ; ses PV montent d'autant que son maximum | Pion | 1 |
+| Promotion | Un Pion qui atteint la dernière rangée (plus aucune case devant lui dans sa colonne) devient une Dame **pour tout le run** ; ses PV montent d'autant que son maximum. **Tous les Pions naissent avec ce pouvoir** (ennemis, renforts et Pions gagnés en récompense), qui n'est donc plus proposé en récompense | Pion | 1 |
 | Perçage | Ses glissades traversent la première pièce alliée (pas si elle se tient dans une forêt qui l'arrêterait). Si cet allié est juste devant une cible qui survit, l'attaquant reste sur place | Dame, Tour, Fou | 1 |
 | Élan | Après une capture, la pièce **rejoue aussitôt** (elle seule ; « Terminer le tour » pour s'arrêter). Une fois par tour : une capture pendant l'Élan n'en redonne pas | toutes | 1 |
 | Balayage | Chaque attaque inflige aussi la moitié de l'ATK (arrondie au-dessus) aux ennemis voisins de la cible | toutes | 1 |
@@ -159,6 +159,17 @@ poussée (ou écrasement) → riposte → promotion → Élan.
   déplacement de 160 ms, flash de dégâts de 400 ms.
 - Tous les niveaux de combat ont une **limite de tours** ; le lac gelé oppose un
   Cavalier (au lieu d'une Tour, trop fuyante) et deux Pions.
+
+### Renforts ✅
+- Un niveau peut prévoir des **vagues de renforts** : au début du tour indiqué,
+  leurs pièces apparaissent sur leur case, ou attendent qu'elle se libère.
+- Tant que des renforts ennemis sont attendus, il reste des ennemis : pas de
+  victoire « toutes les pièces ennemies sont tombées ».
+- À l'écran : cases d'arrivée de la prochaine vague en pointillés rouges (avec le
+  numéro du tour), annonce dans le panneau, entrée de journal, légende.
+- « Tenir la ligne » : 2 Cavaliers sur les flancs au tour 2, puis une Dame et
+  2 Pions (avec Promotion) au tour 3. La ligne de promotion ennemie s'affiche en
+  rouge dès qu'un Pion ennemi peut se promouvoir.
 
 ## 5. IA ennemie ✅
 - Recherche **minimax avec élagage alpha-bêta** (`src/engine/ai/`), calculée dans un

@@ -27,6 +27,20 @@ export interface UnitSpec {
   readonly atk?: number
 }
 
+/** Vague de renforts : des unités qui arrivent au début d'un tour donné. */
+export interface ReinforcementSpec {
+  /** Tour d'arrivée (2 ou plus) : elles apparaissent juste après la fin du tour précédent. */
+  readonly round: number
+  readonly units: readonly UnitSpec[]
+}
+
+/** Pièce en attente d'arriver sur le plateau. */
+export interface Reinforcement {
+  /** Premier tour où elle peut apparaître ; si sa case est occupée, elle attend qu'elle se libère. */
+  readonly round: number
+  readonly piece: Piece
+}
+
 export interface LevelDefinition {
   /** Plateau en texte, voir `parseBoard`. */
   readonly terrain: readonly string[]
@@ -36,6 +50,8 @@ export interface LevelDefinition {
   readonly goal: GoalDefinition
   /** Case où se trouve le héros du joueur. */
   readonly hero: Pos
+  /** Renforts qui arrivent en cours de partie. */
+  readonly reinforcements?: readonly ReinforcementSpec[]
 }
 
 /** État complet d'un niveau en cours. Immuable : chaque action produit un nouvel état. */
@@ -54,6 +70,8 @@ export interface GameState {
   readonly quietPlies: number
   /** Élan : pièce qui rejoue immédiatement (seule à pouvoir agir, ou passer pour finir le tour). */
   readonly bonusPieceId: string | null
+  /** Renforts pas encore arrivés, dans l'ordre d'arrivée. */
+  readonly reinforcements: readonly Reinforcement[]
   readonly status: Status
   readonly endReason: EndReason | null
 }
@@ -76,7 +94,9 @@ export function createLevel(def: LevelDefinition): GameState {
   const board = parseBoard(def.terrain)
   const where = (p: Pos) => `(${p.x}, ${p.y})`
 
-  const explicitIds = new Set(def.units.flatMap((unit) => (unit.id ? [unit.id] : [])))
+  const waves = def.reinforcements ?? []
+  const allUnits = [...def.units, ...waves.flatMap((wave) => wave.units)]
+  const explicitIds = new Set(allUnits.flatMap((unit) => (unit.id ? [unit.id] : [])))
   const counters: Record<Side, number> = { player: 0, enemy: 0 }
   const nextAutoId = (side: Side): string => {
     const prefix = side === 'player' ? 'p' : 'e'
@@ -86,16 +106,10 @@ export function createLevel(def: LevelDefinition): GameState {
   }
 
   const usedIds = new Set<string>()
-  const occupied = new Set<string>()
-  const pieces: Piece[] = def.units.map((unit) => {
+  const buildPiece = (unit: UnitSpec): Piece => {
     if (!isStandable(board, unit.at)) {
       throw new Error(`Unité ${unit.type} placée sur une case impossible ${where(unit.at)}`)
     }
-    if (occupied.has(posKey(unit.at))) {
-      throw new Error(`Deux unités sur la même case ${where(unit.at)}`)
-    }
-    occupied.add(posKey(unit.at))
-
     const id = unit.id ?? nextAutoId(unit.side)
     if (usedIds.has(id)) throw new Error(`Identifiant d'unité en double : ${id}`)
     usedIds.add(id)
@@ -122,7 +136,26 @@ export function createLevel(def: LevelDefinition): GameState {
       powers,
       shieldActive: powers.includes('shield'),
     }
+  }
+
+  const occupied = new Set<string>()
+  const pieces: Piece[] = def.units.map((unit) => {
+    if (occupied.has(posKey(unit.at))) {
+      throw new Error(`Deux unités sur la même case ${where(unit.at)}`)
+    }
+    occupied.add(posKey(unit.at))
+    return buildPiece(unit)
   })
+
+  const reinforcements: Reinforcement[] = waves
+    .map((wave) => {
+      if (!Number.isInteger(wave.round) || wave.round < 2) {
+        throw new Error(`Tour de renforts invalide : ${wave.round}`)
+      }
+      return wave
+    })
+    .sort((a, b) => a.round - b.round)
+    .flatMap((wave) => wave.units.map((unit) => ({ round: wave.round, piece: buildPiece(unit) })))
 
   const hero = pieces.find((piece) => samePos(piece.pos, def.hero))
   if (!hero || hero.side !== 'player') {
@@ -170,6 +203,7 @@ export function createLevel(def: LevelDefinition): GameState {
     consecutivePasses: 0,
     quietPlies: 0,
     bonusPieceId: null,
+    reinforcements,
   }
   const outcome = evaluateOutcome(draft)
   return { ...draft, status: outcome.status, endReason: outcome.reason }

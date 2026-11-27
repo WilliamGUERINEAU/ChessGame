@@ -40,6 +40,25 @@ function selfPlay(level: LevelContent, seed: number, maxPlies = 120) {
 }
 
 describe('niveaux de démonstration', () => {
+  it('tous les Pions, alliés, ennemis ou en renfort, naissent avec Promotion', () => {
+    for (const level of DEMO_LEVELS) {
+      const units = [...level.definition.units, ...(level.definition.reinforcements ?? []).flatMap((wave) => wave.units)]
+      for (const unit of units.filter((candidate) => candidate.type === 'pawn')) {
+        expect(unit.powers, `${level.id} (${unit.at.x}, ${unit.at.y})`).toContain('promotion')
+      }
+    }
+  })
+
+  it('les renforts arrivent hors de la zone de déploiement, sur des cases praticables', () => {
+    for (const level of DEMO_LEVELS) {
+      const zone = new Set(level.deployment.map(posKey))
+      const state = createLevel(level.definition)
+      for (const { piece } of state.reinforcements) {
+        expect(zone.has(posKey(piece.pos)), `${level.id} ${piece.id}`).toBe(false)
+      }
+    }
+  })
+
   it('ont des identifiants uniques', () => {
     const ids = DEMO_LEVELS.map((level) => level.id)
     expect(new Set(ids).size).toBe(ids.length)

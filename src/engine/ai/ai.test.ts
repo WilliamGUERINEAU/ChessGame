@@ -154,3 +154,32 @@ describe('ennemis acculés', () => {
     expect(chooseAction(state)).toMatchObject({ kind: 'attack', target: { x: 5, y: 0 } })
   })
 })
+
+describe('IA en survie', () => {
+  // L'ennemi peut prendre une Tour blessée (1 PV) ou toucher le héros d'1 PV.
+  // En combat, il prend la Tour ; en survie, il frappe le héros.
+  const position = (goal: 'eliminate' | 'survive') =>
+    testLevel({
+      terrain: ['.....', '.....', '.....', '.....', '.....'],
+      units: ['p.r.R', '', 'p....', '', '..K..'],
+      hero: { x: 2, y: 4 },
+      goal: goal === 'survive' ? { kind: 'survive', rounds: 5 } : { kind: 'eliminate' },
+      stats: { '2,0': { atk: 1 }, '4,0': { hp: 1 } },
+      forward: { player: 'up', enemy: 'down' },
+    })
+  const enemyTurn = (state: GameState) => ({ ...state, sideToMove: 'enemy' as const })
+
+  it('en combat, préfère le matériel', () => {
+    expect(chooseAction(enemyTurn(position('eliminate')), { depth: 2, aggression: 0 })).toMatchObject({
+      kind: 'attack',
+      target: { x: 4, y: 0 },
+    })
+  })
+
+  it('en survie, fonce sur le héros', () => {
+    expect(chooseAction(enemyTurn(position('survive')), { depth: 2, aggression: 0 })).toMatchObject({
+      kind: 'attack',
+      target: { x: 2, y: 4 },
+    })
+  })
+})

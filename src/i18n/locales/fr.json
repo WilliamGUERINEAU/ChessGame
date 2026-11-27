@@ -29,7 +29,7 @@
     },
     "hold-the-line": {
       "name": "Tenir la ligne",
-      "description": "Quatre ennemis fondent sur vous. Gardez votre héros en vie pendant 5 tours."
+      "description": "Quatre ennemis foncent sur votre héros, et des renforts surgissent sur les flancs. Tenez 5 tours."
     },
     "the-warden": {
       "name": "Le gardien",
@@ -70,7 +70,13 @@
     "promotionLine": "Ligne de promotion",
     "promotionRule": "un Pion avec Promotion qui l’atteint devient une Dame.",
     "momentum": "Élan : votre {{piece}} rejoue ! Agissez avec elle, ou terminez le tour.",
-    "endTurn": "Terminer le tour"
+    "endTurn": "Terminer le tour",
+    "reinforcements_one": "Renfort ennemi au tour {{round}} !",
+    "reinforcements_other": "{{count}} renforts ennemis au tour {{round}} !",
+    "reinforcementsLegend": "Renforts",
+    "reinforcementsRule": "des ennemis arriveront sur cette case au tour indiqué (si elle est libre).",
+    "enemyPromotionLine": "Ligne de promotion ennemie",
+    "enemyPromotionRule": "un Pion ennemi qui l’atteint devient une Dame."
   },
   "end": {
     "won": "Victoire !",
@@ -130,7 +136,8 @@
     "crush": "Écrasé contre l’obstacle : {{target}} : −{{damage}} PV",
     "push": "Repoussé : {{piece}}",
     "heal": "Vampirisme : {{piece}} +{{amount}} PV",
-    "momentum": "Élan : {{piece}} rejoue"
+    "momentum": "Élan : {{piece}} rejoue",
+    "reinforce": "Renforts : {{piece}}"
   },
   "a11y": {
     "board": "Plateau de jeu",
@@ -141,7 +148,9 @@
     "landing": "atterrissage possible",
     "deploy": "case de déploiement",
     "shield": "bouclier actif",
-    "promotion": "ligne de promotion"
+    "promotion": "ligne de promotion",
+    "enemyPromotion": "ligne de promotion ennemie",
+    "reinforcement": "renforts ennemis au tour {{round}}"
   },
   "classes": {
     "title": "Choisissez votre héros",
@@ -187,7 +196,7 @@
     },
     "promotion": {
       "name": "Promotion",
-      "description": "Un Pion qui atteint le bord opposé devient une Dame, pour tout le run."
+      "description": "Un Pion qui atteint le bord opposé devient une Dame, pour tout le run. Tous les Pions naissent avec ce pouvoir."
     },
     "piercing": {
       "name": "Perçage",
@@ -242,6 +251,7 @@
     "levelsCleared": "Niveaux réussis : {{count}} / {{total}}",
     "newRun": "Nouveau run",
     "menu": "Menu",
-    "promotionHint": "Le liseré violet marque la ligne de promotion de vos Pions."
+    "promotionHint": "Le liseré violet marque la ligne de promotion de vos Pions.",
+    "reinforcementsHint": "Des renforts ennemis arriveront sur les cases en pointillés rouges."
   }
 }

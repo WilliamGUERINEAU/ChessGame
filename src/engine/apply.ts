@@ -30,6 +30,8 @@ export type GameEvent =
   | { readonly type: 'heal'; readonly pieceId: string; readonly amount: number; readonly hp: number }
   /** Élan : la pièce rejoue immédiatement. */
   | { readonly type: 'momentum'; readonly pieceId: string }
+  /** Des renforts sont arrivés sur le plateau. */
+  | { readonly type: 'reinforce'; readonly pieceId: string; readonly at: Pos }
   /** Un Pion avec Promotion est devenu une Dame. */
   | { readonly type: 'promote'; readonly pieceId: string }
   | { readonly type: 'pass'; readonly side: Side }
@@ -146,11 +148,14 @@ class TurnBuilder {
     // Passer pour finir un Élan n'est pas un blocage.
     const passed = action.kind === 'pass' && !state.bonusPieceId
     const keepTurn = this.bonusFor !== null
+    const round = !keepTurn && state.sideToMove === 'enemy' ? state.round + 1 : state.round
+    const reinforcements = round > state.round ? this.bringReinforcements(round) : state.reinforcements
     const draft = {
       ...state,
       pieces: this.pieces,
       sideToMove: keepTurn ? state.sideToMove : opponent(state.sideToMove),
-      round: !keepTurn && state.sideToMove === 'enemy' ? state.round + 1 : state.round,
+      round,
+      reinforcements,
       consecutivePasses: passed ? state.consecutivePasses + 1 : 0,
       quietPlies: fought ? 0 : state.quietPlies + 1,
       bonusPieceId: this.bonusFor,
@@ -163,6 +168,24 @@ class TurnBuilder {
       state: { ...draft, status: outcome.status, endReason: outcome.reason },
       events: this.events,
     }
+  }
+
+  /**
+   * Début d'un nouveau tour : les renforts attendus arrivent, chacun seulement si sa
+   * case est libre (sinon il attend un prochain tour). Renvoie ceux qui attendent encore.
+   */
+  private bringReinforcements(round: number): GameState['reinforcements'] {
+    const waiting: GameState['reinforcements'][number][] = []
+    for (const reinforcement of this.state.reinforcements) {
+      const { piece } = reinforcement
+      if (reinforcement.round > round || this.pieces.some((other) => samePos(other.pos, piece.pos))) {
+        waiting.push(reinforcement)
+        continue
+      }
+      this.pieces.push(piece)
+      this.events.push({ type: 'reinforce', pieceId: piece.id, at: piece.pos })
+    }
+    return waiting
   }
 
   /**
