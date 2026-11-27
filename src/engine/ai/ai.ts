@@ -1,5 +1,6 @@
 import { resolveAction } from '../apply'
-import { kingDistance } from '../geometry'
+import { isStandable, type Board } from '../board/board'
+import { add, ALL_DIRECTIONS, type Pos } from '../geometry'
 import { legalActions, type Action } from '../moves'
 import { PIECES, type PieceType } from '../pieces/pieces'
 import type { Rng } from '../rng'
@@ -15,6 +16,13 @@ export interface AiOptions {
    * Faible, l'ennemi se met à l'abri ; forte, il vient au contact quitte à prendre des coups.
    */
   readonly aggression?: number
+  /**
+   * Approche des pièces du joueur vers leur objectif (hors héros). Sert surtout aux
+   * parties simulées : un joueur simulé trop prudent ne vient jamais au contact.
+   */
+  readonly playerApproach?: number
+  /** Approche du héros du joueur vers l'objectif (0 par défaut : il reste en retrait). */
+  readonly heroApproach?: number
 }
 
 export const DEFAULT_AI_DEPTH = 2
@@ -69,6 +77,8 @@ const PLY_COST = 1_000
 
 interface Weights {
   readonly enemyApproach: number
+  readonly playerApproach: number
+  readonly heroApproach: number
 }
 
 /**
@@ -94,6 +104,8 @@ export function rankActions(state: GameState, options: AiOptions = {}): RankedAc
   const depth = Math.max(1, options.depth ?? DEFAULT_AI_DEPTH)
   const weights: Weights = {
     enemyApproach: effectiveAggression(state, options.aggression ?? DEFAULT_AGGRESSION),
+    playerApproach: options.playerApproach ?? PLAYER_APPROACH,
+    heroApproach: options.heroApproach ?? 0,
   }
   const actions = orderActions(legalActions(state))
   if (actions.length <= 1) return actions.map((action) => ({ action, score: 0 }))
@@ -171,14 +183,57 @@ function positionForEnemy(state: GameState, weights: Weights): number {
   // L'approche est un bonus positif, plus grand près du but : une pièce garde
   // toujours de la valeur, et une capture rapporte toujours (sinon, perdre une
   // pièce lointaine « améliorerait » la position de son camp).
-  const reach = Math.max(state.board.width, state.board.height)
+  const board = state.board
+  const reach = board.width + board.height
   for (const piece of state.pieces) {
     if (piece.side === 'enemy' && hero && piece.id !== targetId) {
-      score += weights.enemyApproach * (reach - kingDistance(piece.pos, hero.pos))
-    } else if (piece.side === 'player' && piece.id !== state.heroId && objectives.length > 0) {
-      const nearest = Math.min(...objectives.map((o) => kingDistance(piece.pos, o.pos)))
-      score -= PLAYER_APPROACH * (reach - nearest)
+      score += weights.enemyApproach * Math.max(0, reach - walkDistance(board, hero.pos, piece.pos))
+    } else if (piece.side === 'player' && objectives.length > 0) {
+      const weight = piece.id === state.heroId ? weights.heroApproach : weights.playerApproach
+      const nearest = Math.min(...objectives.map((o) => walkDistance(board, o.pos, piece.pos)))
+      score -= weight * Math.max(0, reach - nearest)
     }
   }
   return score
+}
+
+/**
+ * Distance de marche (pas de Roi) entre deux cases, en contournant murs, eau et vide
+ * (les pièces sont ignorées). Sans chemin : très grande. Mise en cache par plateau et
+ * par case de départ : la recherche de l'IA réévalue souvent les mêmes positions.
+ */
+const walkCache = new WeakMap<Board, Map<number, Int16Array>>()
+
+function walkDistance(board: Board, from: Pos, to: Pos): number {
+  const distance = walkDistances(board, from)[to.y * board.width + to.x]
+  return distance < 0 ? Number.MAX_SAFE_INTEGER : distance
+}
+
+function walkDistances(board: Board, from: Pos): Int16Array {
+  let perBoard = walkCache.get(board)
+  if (!perBoard) {
+    perBoard = new Map()
+    walkCache.set(board, perBoard)
+  }
+  const start = from.y * board.width + from.x
+  const cached = perBoard.get(start)
+  if (cached) return cached
+
+  const distances = new Int16Array(board.width * board.height).fill(-1)
+  distances[start] = 0
+  const queue: Pos[] = [from]
+  for (let head = 0; head < queue.length; head++) {
+    const current = queue[head]
+    const next = distances[current.y * board.width + current.x] + 1
+    for (const v of ALL_DIRECTIONS) {
+      const p = add(current, v)
+      if (!isStandable(board, p)) continue
+      const index = p.y * board.width + p.x
+      if (distances[index] >= 0) continue
+      distances[index] = next
+      queue.push(p)
+    }
+  }
+  perBoard.set(start, distances)
+  return distances
 }

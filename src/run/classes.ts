@@ -11,17 +11,17 @@ export interface ClassDefinition {
 }
 
 export const CLASSES: Readonly<Record<ClassId, ClassDefinition>> = {
-  /** Souverain : Roi (4 PV, 1 ATK) avec Riposte ; armée nombreuse et défensive. */
+  /** Souverain : Roi (4 PV, 1 ATK) avec Riposte, et sa Tour. */
   sovereign: {
     id: 'sovereign',
     hero: { type: 'king', powers: ['riposte'] },
-    army: ['rook', 'knight', 'pawn', 'pawn'],
+    army: ['rook'],
   },
-  /** Chevalière : Cavalier (4 PV grâce à 2 Vigueur, 2 ATK) avec Bouclier ; armée mobile et offensive. */
+  /** Chevalière : Cavalier (4 PV grâce à 2 Vigueur, 2 ATK) avec Bouclier, et un Fou. */
   knightess: {
     id: 'knightess',
     hero: { type: 'knight', powers: ['shield', 'vigor', 'vigor'] },
-    army: ['bishop', 'bishop', 'pawn'],
+    army: ['bishop'],
   },
 }
 

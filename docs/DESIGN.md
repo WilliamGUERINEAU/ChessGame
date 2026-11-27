@@ -22,8 +22,12 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 
   | Classe | Héros | Pouvoirs du héros | Armée de départ |
   |---|---|---|---|
-  | Souverain | Roi (4 PV, 1 ATK) | Riposte | Tour, Cavalier, 2 Pions |
-  | Chevalière | Cavalier (4 PV, 2 ATK) | Bouclier, Vigueur ×2 | 2 Fous, 1 Pion |
+  | Souverain | Roi (4 PV, 1 ATK) | Riposte | Tour |
+  | Chevalière | Cavalier (4 PV, 2 ATK) | Bouclier, Vigueur ×2 | Fou |
+
+  On part avec **2 pièces** (héros compris) ; l'armée grandit avec les récompenses.
+- **Ennemis** ✅ : de plus en plus nombreux au fil du run : 2, puis 3, 3, 4 et 4
+  (le dernier niveau compte la cible Gardienne).
 
 - **Armée** ✅ : **6 pièces au maximum**, héros compris.
 - **Défaite** ✅ : **tout niveau perdu met fin au run** (mort du héros, temps
@@ -55,6 +59,12 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
   le niveau, le jeu **propose un placement** (héros au centre de la rangée arrière,
   Pions devant, les autres près du héros) que le joueur peut retoucher : toucher une
   pièce, puis une case de la zone (ou une autre pièce pour les échanger).
+- **Pas de prise au premier coup** ✅ : les zones sont hors de portée des ennemis.
+  Depuis n'importe quelle case de zone, aucune pièce du joueur ne peut attaquer à son
+  premier coup, même une Dame avec Forestier, un Roi ou un Pion avec Allonge. Murs
+  et eau coupent les lignes ; les ennemis sont placés hors des diagonales qui
+  passent par les brèches. Un test le vérifie pour chaque niveau. L'ennemi, lui,
+  peut punir un placement imprudent dès son premier coup.
 
 ### Génération (hybride)
 - Formes de plateau et gabarits **faits main**.
@@ -142,7 +152,11 @@ Gagnés en récompense (ou portés par le héros dès le départ), conservés to
   (l'ennemi cherche à l'user), bonus pour la cible d'un niveau de capture, et
   **approche** des ennemis vers le héros. L'approche est un **bonus positif par
   pièce**, plus grand près du but : une pièce garde toujours de la valeur et une
-  capture rapporte toujours, même loin du héros.
+  capture rapporte toujours, même loin du héros. Elle se mesure en **distance de
+  marche** (contournement des murs, de l'eau et du vide), pour que les ennemis
+  cherchent les brèches au lieu de rester bloqués derrière un mur.
+- Pour les parties simulées seulement, deux réglages font venir au contact les
+  pièces et le héros du joueur simulé (sans effet sur l'IA ennemie en jeu).
 - **Ennemis acculés** ✅ : quand il ne reste que **2 pièces ennemies ou moins**, ou
   après **3 tours (6 actions) sans aucune attaque**, leur agressivité passe à au
   moins 2 : ils cessent de fuir et viennent au contact. Décidé une fois par coup,

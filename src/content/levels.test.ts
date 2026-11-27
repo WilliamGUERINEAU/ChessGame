@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { applyAction, createLevel, createRng, isStandable, legalActions, parseBoard, posKey } from '../engine'
+import {
+  applyAction,
+  createLevel,
+  createRng,
+  isStandable,
+  legalActions,
+  parseBoard,
+  pieceActions,
+  posKey,
+  type PieceType,
+  type PowerId,
+} from '../engine'
 import { chooseAction } from '../engine/ai/ai'
 import { MAX_ARMY } from '../run/run'
 import { DEMO_LEVELS, type LevelContent } from './levels'
@@ -40,6 +51,46 @@ describe('niveaux de démonstration', () => {
       for (const cell of level.deployment) {
         expect(isStandable(board, cell), `case ${posKey(cell)}`).toBe(true)
         expect(enemyCells).not.toContain(posKey(cell))
+      }
+    },
+  )
+
+  /** Pièces « sondes » : les plus longues portées possibles au premier coup. */
+  const PROBES: ReadonlyArray<readonly [PieceType, readonly PowerId[]]> = [
+    ['queen', ['forester']],
+    ['knight', []],
+    ['king', ['reach']],
+    ['pawn', ['reach', 'forester']],
+  ]
+
+  it.each(DEMO_LEVELS.map((level) => [level.id, level] as const))(
+    '%s : aucune pièce placée dans la zone ne peut attaquer dès son premier coup',
+    (_id, level) => {
+      const enemies = level.definition.units.filter((unit) => unit.side === 'enemy')
+      for (const cell of level.deployment) {
+        for (const [type, powers] of PROBES) {
+          const state = createLevel({
+            ...level.definition,
+            units: [...enemies, { type, side: 'player', at: cell, powers }],
+            hero: cell,
+            goal: { kind: 'eliminate' },
+          })
+          const attacks = state.pieces
+            .filter((piece) => piece.side === 'player')
+            .flatMap((piece) => pieceActions(state, piece.id))
+            .filter((action) => action.kind === 'attack')
+          expect(attacks, `${type} en ${posKey(cell)}`).toEqual([])
+        }
+      }
+    },
+  )
+
+  it.each(DEMO_LEVELS.map((level) => [level.id, level] as const))(
+    '%s : l’armée d’entraînement est placée dans la zone de déploiement',
+    (_id, level) => {
+      const zone = level.deployment.map(posKey)
+      for (const unit of level.definition.units.filter((u) => u.side === 'player')) {
+        expect(zone, `${unit.type} en ${posKey(unit.at)}`).toContain(posKey(unit.at))
       }
     },
   )

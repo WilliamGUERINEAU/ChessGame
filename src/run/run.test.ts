@@ -36,9 +36,9 @@ function endedBattle(state: GameState, status: 'won' | 'lost', removed: readonly
 }
 
 describe('startRun et classes', () => {
-  it('Souverain : Roi héros avec Riposte, Tour, Cavalier et 2 Pions', () => {
+  it('Souverain : Roi héros avec Riposte, et une Tour (2 pièces)', () => {
     const run = startRun('sovereign', 1, LEVELS.length)
-    expect(run.army.map((piece) => piece.type)).toEqual(['king', 'rook', 'knight', 'pawn', 'pawn'])
+    expect(run.army.map((piece) => piece.type)).toEqual(['king', 'rook'])
     expect(run.army[0]).toEqual({ id: 'a1', type: 'king', powers: ['riposte'] })
     expect(run.heroId).toBe('a1')
     expect(run.phase).toBe('deploy')
@@ -48,12 +48,21 @@ describe('startRun et classes', () => {
     const run = startRun('knightess', 1, LEVELS.length)
     const state = deployedBattle(beginBattle(run))
     expect(findPiece(state, 'a1')).toMatchObject({ type: 'knight', hp: 4, maxHp: 4, atk: 2, shieldActive: true })
+    expect(run.army.map((piece) => piece.type)).toEqual(['knight', 'bishop'])
     expect(run.army).toHaveLength(1 + CLASSES.knightess.army.length)
   })
 })
 
+/** Armée plus fournie que celle de départ, pour tester le placement des Pions. */
+const BIG_ARMY: ArmyPiece[] = [
+  { id: 'a1', type: 'king', powers: ['riposte'] },
+  { id: 'a2', type: 'rook', powers: [] },
+  { id: 'a3', type: 'pawn', powers: [] },
+  { id: 'a4', type: 'pawn', powers: [] },
+]
+
 describe('déploiement', () => {
-  const run = startRun('sovereign', 1, LEVELS.length)
+  const run: RunState = { ...startRun('sovereign', 1, LEVELS.length), army: BIG_ARMY }
   const zone = firstLevel.deployment
   const placement = autoDeploy(run.army, run.heroId, zone, playerForward(firstLevel))
 
@@ -65,8 +74,8 @@ describe('déploiement', () => {
   })
 
   it('le héros au centre de la rangée arrière, les Pions devant', () => {
-    expect(placement.a1).toEqual({ x: 3, y: 5 })
-    for (const pawn of run.army.filter((piece) => piece.type === 'pawn')) expect(placement[pawn.id].y).toBe(4)
+    expect(placement.a1).toEqual({ x: 3, y: 6 })
+    for (const pawn of run.army.filter((piece) => piece.type === 'pawn')) expect(placement[pawn.id].y).toBe(5)
   })
 
   it('est déterministe', () => {
@@ -74,8 +83,8 @@ describe('déploiement', () => {
   })
 
   it('déplacer une pièce sur une case libre, ou échanger avec une pièce', () => {
-    const moved = movePlacement(placement, 'a1', { x: 0, y: 4 }, zone)
-    expect(moved.a1).toEqual({ x: 0, y: 4 })
+    const moved = movePlacement(placement, 'a1', { x: 0, y: 5 }, zone)
+    expect(moved.a1).toEqual({ x: 0, y: 5 })
     const pawnCell = placement.a4
     const swapped = movePlacement(placement, 'a1', pawnCell, zone)
     expect(swapped.a1).toEqual(pawnCell)
@@ -109,10 +118,10 @@ describe('fin de combat', () => {
   })
 
   it('une victoire : les pièces mortes quittent l’armée, puis 3 récompenses', () => {
-    const run = beginBattle(startRun('sovereign', 1, LEVELS.length))
+    const run = beginBattle({ ...startRun('sovereign', 1, LEVELS.length), army: BIG_ARMY })
     const after = finishBattle(run, endedBattle(deployedBattle(run), 'won', ['a3']))
     expect(after.phase).toBe('reward')
-    expect(after.army.map((piece) => piece.id)).toEqual(['a1', 'a2', 'a4', 'a5'])
+    expect(after.army.map((piece) => piece.id)).toEqual(['a1', 'a2', 'a4'])
     expect(after.levelsCleared).toBe(1)
     expect(after.rewardOptions).toHaveLength(3)
   })
@@ -185,13 +194,18 @@ describe('récompenses', () => {
   it('une nouvelle pièce rejoint l’armée avec un nouvel identifiant', () => {
     const run: RunState = { ...startRun('sovereign', 1, LEVELS.length), phase: 'reward', rewardOptions: [{ kind: 'piece', type: 'bishop' }] }
     const after = applyReward(run, { kind: 'piece', type: 'bishop' })
-    expect(after.army.at(-1)).toEqual({ id: 'a6', type: 'bishop', powers: [] })
+    expect(after.army.at(-1)).toEqual({ id: 'a3', type: 'bishop', powers: [] })
     expect(after.phase).toBe('deploy')
     expect(after.levelIndex).toBe(1)
   })
 
   it('un pouvoir va sur la pièce choisie, si elle peut le recevoir', () => {
-    const run: RunState = { ...startRun('sovereign', 1, LEVELS.length), phase: 'reward', rewardOptions: [{ kind: 'power', power: 'promotion' }] }
+    const run: RunState = {
+      ...startRun('sovereign', 1, LEVELS.length),
+      army: BIG_ARMY,
+      phase: 'reward',
+      rewardOptions: [{ kind: 'power', power: 'promotion' }],
+    }
     expect(applyReward(run, { kind: 'power', power: 'promotion' }, 'a4').army[3].powers).toEqual(['promotion'])
     expect(() => applyReward(run, { kind: 'power', power: 'promotion' }, 'a2')).toThrow()
     expect(() => applyReward(run, { kind: 'piece', type: 'queen' })).toThrow('non proposée')

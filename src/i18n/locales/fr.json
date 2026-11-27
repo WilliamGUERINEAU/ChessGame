@@ -7,7 +7,7 @@
     "newRun": "Nouvelle partie",
     "practice": "Entraînement",
     "back": "Retour",
-    "demoNotice": "Un run, ce sont 5 niveaux d’affilée avec une récompense après chaque victoire. L’entraînement permet de rejouer chaque niveau avec une armée fixe."
+    "demoNotice": "Un run, ce sont 5 niveaux d’affilée : vous partez avec 2 pièces et gagnez une récompense après chaque victoire. L’entraînement permet de rejouer chaque niveau avec une armée fixe."
   },
   "settings": {
     "language": "Langue"
@@ -17,19 +17,19 @@
     "number": "Niveau {{number}}",
     "first-steps": {
       "name": "Premiers pas",
-      "description": "Deux pions et un Fou. Apprenez à déplacer vos pièces et à attaquer."
+      "description": "Un Pion et un Fou derrière un mur. Passez par les brèches pour les atteindre."
     },
     "the-bend": {
       "name": "Le coude",
-      "description": "Un plateau en L. La forêt arrête les pièces qui glissent."
+      "description": "Un plateau en L. Les murs du coude cachent les ennemis ; la forêt arrête les pièces qui glissent."
     },
     "frozen-lake": {
       "name": "Lac gelé",
-      "description": "La glace fait glisser vos pièces ; l'eau ne se franchit qu'en sautant."
+      "description": "Les ennemis attendent au-delà du lac. La glace fait glisser vos pièces ; l’eau ne se franchit qu’en sautant."
     },
     "hold-the-line": {
       "name": "Tenir la ligne",
-      "description": "Une armée fond sur vous. Gardez votre Roi en vie pendant 6 tours."
+      "description": "Quatre ennemis fondent sur vous. Gardez votre héros en vie pendant 6 tours."
     },
     "the-warden": {
       "name": "Le gardien",
@@ -141,11 +141,11 @@
     "army": "Armée",
     "sovereign": {
       "name": "Souverain",
-      "description": "Un Roi entouré d’une armée nombreuse. Qui le frappe s’expose à sa riposte."
+      "description": "Un Roi et sa Tour. Qui frappe le Roi s’expose à sa riposte."
     },
     "knightess": {
       "name": "Chevalière",
-      "description": "Une Cavalière mobile et solide, protégée par son bouclier, appuyée par deux Fous."
+      "description": "Une Cavalière mobile et solide, protégée par son bouclier, appuyée par un Fou."
     }
   },
   "powers": {

@@ -7,7 +7,7 @@
     "newRun": "New run",
     "practice": "Practice",
     "back": "Back",
-    "demoNotice": "A run is 5 levels in a row, with a reward after each win. Practice lets you replay each level with a fixed army."
+    "demoNotice": "A run is 5 levels in a row: you start with 2 pieces and earn a reward after each win. Practice lets you replay each level with a fixed army."
   },
   "settings": {
     "language": "Language"
@@ -17,19 +17,19 @@
     "number": "Level {{number}}",
     "first-steps": {
       "name": "First steps",
-      "description": "Two pawns and a bishop. Learn to move your pieces and attack."
+      "description": "A pawn and a bishop behind a wall. Go through the gaps to reach them."
     },
     "the-bend": {
       "name": "The bend",
-      "description": "An L-shaped board. Forests stop sliding pieces."
+      "description": "An L-shaped board. The walls at the bend hide the enemies; forests stop sliding pieces."
     },
     "frozen-lake": {
       "name": "Frozen lake",
-      "description": "Ice makes your pieces slide; water can only be jumped over."
+      "description": "The enemies wait beyond the lake. Ice makes your pieces slide; water can only be jumped over."
     },
     "hold-the-line": {
       "name": "Hold the line",
-      "description": "An army is closing in. Keep your king alive for 6 rounds."
+      "description": "Four enemies are closing in. Keep your hero alive for 6 rounds."
     },
     "the-warden": {
       "name": "The warden",
@@ -141,11 +141,11 @@
     "army": "Army",
     "sovereign": {
       "name": "Sovereign",
-      "description": "A king surrounded by a large army. Whoever strikes him faces his riposte."
+      "description": "A king and his rook. Whoever strikes the king faces his riposte."
     },
     "knightess": {
       "name": "Knight-errant",
-      "description": "A mobile, sturdy knight protected by her shield, backed by two bishops."
+      "description": "A mobile, sturdy knight protected by her shield, backed by a bishop."
     }
   },
   "powers": {
