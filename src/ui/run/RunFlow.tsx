@@ -41,6 +41,7 @@ export function RunFlow({ classId, seed, onExit, onNewRun }: RunFlowProps) {
       definition: battleDefinition(level, run, placement),
       aiDepth: level.aiDepth,
       aiAggression: level.aiAggression,
+      aiBoldness: level.aiBoldness,
       seedKey: `run:${seed}:${run.levelIndex}`,
     }),
     [level, run, placement, seed],

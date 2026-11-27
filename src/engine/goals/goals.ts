@@ -5,12 +5,15 @@ import type { GameState } from '../state'
 export type GoalDefinition =
   | { readonly kind: 'eliminate'; readonly maxRounds?: number }
   | { readonly kind: 'survive'; readonly rounds: number }
+  /** Interception : empêcher les ennemis d'atteindre une sortie pendant `rounds` tours. */
+  | { readonly kind: 'intercept'; readonly exits: readonly Pos[]; readonly rounds: number }
   | { readonly kind: 'capture'; readonly target: Pos; readonly maxRounds?: number }
 
 /** Objectif pendant la partie (la cible est désignée par son identifiant). */
 export type Goal =
   | { readonly kind: 'eliminate'; readonly maxRounds?: number }
   | { readonly kind: 'survive'; readonly rounds: number }
+  | { readonly kind: 'intercept'; readonly exits: readonly Pos[]; readonly rounds: number }
   | { readonly kind: 'capture'; readonly targetId: string; readonly maxRounds?: number }
 
 export type Status = 'ongoing' | 'won' | 'lost'
@@ -28,6 +31,8 @@ export type EndReason =
   | 'timeUp'
   /** Défaite : aucun des deux camps ne peut jouer. */
   | 'stalemate'
+  /** Défaite : un ennemi a atteint une sortie (interception). */
+  | 'escaped'
 
 export type Outcome =
   | { readonly status: 'ongoing'; readonly reason: null }
@@ -64,6 +69,15 @@ export function evaluateOutcome(state: OutcomeInput): Outcome {
       if (state.round > goal.rounds) return won('survived')
       // En survie, les passes font simplement avancer les tours : pas de blocage.
       return ONGOING
+    case 'intercept': {
+      const escaped = state.pieces.some(
+        (piece) => piece.side === 'enemy' && goal.exits.some((exit) => exit.x === piece.pos.x && exit.y === piece.pos.y),
+      )
+      if (escaped) return lost('escaped')
+      if (!enemiesLeft) return won('allEliminated')
+      if (state.round > goal.rounds) return won('survived')
+      return ONGOING
+    }
     case 'capture':
       if (!isAlive(goal.targetId)) return won('targetCaptured')
       if (goal.maxRounds !== undefined && state.round > goal.maxRounds) return lost('timeUp')

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyAction } from '../../engine'
 import { idAt, testLevel } from '../../engine/testing'
-import { highlightsFor, interpretClick, lastMoveOf, logEntriesFor, NO_SELECTION } from './interaction'
+import { enemyThreats, highlightsFor, interpretClick, lastMoveOf, logEntriesFor, NO_SELECTION } from './interaction'
 
 describe('interpretClick', () => {
   const state = testLevel({ terrain: ['....', '....', '....'], units: ['...r', '', 'R..K'] })
@@ -12,10 +12,6 @@ describe('interpretClick', () => {
       kind: 'select',
       selection: { kind: 'piece', pieceId: rook },
     })
-  })
-
-  it('ne sélectionne pas une pièce ennemie', () => {
-    expect(interpretClick(state, NO_SELECTION, { x: 3, y: 0 })).toEqual({ kind: 'select', selection: NO_SELECTION })
   })
 
   it('joue un déplacement vers une case en surbrillance', () => {
@@ -120,5 +116,37 @@ describe('journal des nouveaux pouvoirs', () => {
     })
     const crush = applyAction(crushed, { kind: 'attack', pieceId: idAt(crushed, 0, 0), target: { x: 2, y: 0 } })
     expect(logEntriesFor(crushed, crush.events, 1).map((entry) => entry.kind)).toContain('crush')
+  })
+})
+
+describe('observer un ennemi', () => {
+  const state = testLevel({ terrain: ['....', '....'], units: ['K..r', '....'] })
+  const rook = idAt(state, 3, 0)
+
+  it('toucher un ennemi l’observe, le toucher à nouveau désélectionne', () => {
+    const first = interpretClick(state, NO_SELECTION, { x: 3, y: 0 })
+    expect(first).toEqual({ kind: 'select', selection: { kind: 'inspect', pieceId: rook } })
+    if (first.kind !== 'select') throw new Error('attendu : sélection')
+    expect(interpretClick(state, first.selection, { x: 3, y: 0 })).toEqual({ kind: 'select', selection: NO_SELECTION })
+  })
+
+  it('montre les cases que l’ennemi menace', () => {
+    const h = highlightsFor(state, { kind: 'inspect', pieceId: rook })
+    expect(h.threats.map((p) => `${p.x},${p.y}`).sort()).toEqual(['0,0', '1,0', '2,0', '3,1'])
+    expect(h.moves).toEqual([])
+  })
+
+  it('les menaces de tous les ennemis sont réunies sans doublon', () => {
+    const two = testLevel({ terrain: ['...'], units: ['r.K'], hero: { x: 2, y: 0 } })
+    expect(enemyThreats(two).map((p) => `${p.x},${p.y}`).sort()).toEqual(['1,0', '2,0'])
+  })
+
+  it('une pièce du joueur sélectionnée montre le résultat prévu de chaque attaque', () => {
+    const h = highlightsFor(state, { kind: 'piece', pieceId: idAt(state, 0, 0) })
+    expect(h.previews).toEqual([])
+    const fight = testLevel({ terrain: ['....'], units: ['R..p'] })
+    const preview = highlightsFor(fight, { kind: 'piece', pieceId: idAt(fight, 0, 0) }).previews
+    expect(preview).toHaveLength(1)
+    expect(preview[0]).toMatchObject({ pos: { x: 3, y: 0 }, preview: { kills: true } })
   })
 })

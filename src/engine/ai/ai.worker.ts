@@ -11,6 +11,7 @@ export interface AiRequest {
   readonly state: GameState
   readonly depth: number
   readonly aggression: number
+  readonly boldness: number
   readonly seed: number
 }
 
@@ -27,9 +28,9 @@ interface WorkerScope {
 const scope = self as unknown as WorkerScope
 
 scope.onmessage = (event) => {
-  const { id, state, depth, aggression, seed } = event.data
+  const { id, state, depth, aggression, boldness, seed } = event.data
   try {
-    scope.postMessage({ id, action: chooseAction(state, { depth, aggression, rng: createRng(seed) }) })
+    scope.postMessage({ id, action: chooseAction(state, { depth, aggression, boldness, rng: createRng(seed) }) })
   } catch (error) {
     scope.postMessage({ id, error: String(error) })
   }

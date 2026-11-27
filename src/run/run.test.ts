@@ -233,7 +233,7 @@ describe('runs complets simulés', () => {
       let state = createLevel(battleDefinition(level, run, autoDeploy(run.army, run.heroId, level.deployment, playerForward(level))))
       for (let ply = 0; ply < 200 && state.status === 'ongoing'; ply++) {
         const enemy = state.sideToMove === 'enemy'
-        const action = chooseAction(state, { depth: enemy ? level.aiDepth : 3, aggression: enemy ? level.aiAggression : undefined, rng })
+        const action = chooseAction(state, { depth: enemy ? level.aiDepth : 3, aggression: enemy ? level.aiAggression : undefined, boldness: enemy ? level.aiBoldness : undefined, rng })
         state = applyAction(state, action).state
       }
       if (state.status === 'ongoing') return run

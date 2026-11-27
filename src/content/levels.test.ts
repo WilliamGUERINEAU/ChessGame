@@ -30,7 +30,7 @@ function selfPlay(level: LevelContent, seed: number, maxPlies = 120) {
     const action = chooseAction(
       state,
       enemy
-        ? { depth: level.aiDepth, aggression: level.aiAggression, rng }
+        ? { depth: level.aiDepth, aggression: level.aiAggression, boldness: level.aiBoldness, rng }
         : // En survie, le joueur simulé garde son héros en retrait.
           { depth: 4, rng, playerApproach: survive ? 0.3 : 2, heroApproach: survive ? 0 : 0.5 },
     )

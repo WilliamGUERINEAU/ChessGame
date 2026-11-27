@@ -5,6 +5,7 @@ import type { LevelContent } from '../../content/levels'
 import { autoDeploy, battleDefinition, movePlacement, playerForward, type Placement } from '../../run/deploy'
 import { MAX_ARMY, type RunState } from '../../run/run'
 import { Board } from '../board/Board'
+import { NO_HIGHLIGHTS } from '../game/interaction'
 import { hasPromotionPawn, nextReinforcements } from '../board/promotion'
 import { ArmyList } from './ArmyList'
 
@@ -17,7 +18,6 @@ export interface DeployScreenProps {
   readonly onAbandon: () => void
 }
 
-const NO_HIGHLIGHTS = { moves: [], attacks: [], landings: [] } as const
 
 /**
  * Placement de l'armée avant un niveau : la proposition automatique peut être

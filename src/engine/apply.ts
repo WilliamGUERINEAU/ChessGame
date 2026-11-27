@@ -317,3 +317,31 @@ function iceDirection(piece: Piece, from: Pos, to: Pos): Vec | null {
   if (samePos(from, to)) return null
   return stepToward(from, to)
 }
+
+/** Résultat prévu d'une attaque, pour l'afficher avant de la jouer. */
+export interface AttackPreview {
+  /** Dégâts infligés à la cible (0 si un bouclier les absorbe). */
+  readonly damage: number
+  readonly kills: boolean
+  /** Dégâts de riposte subis par l'attaquant. */
+  readonly riposteDamage: number
+  readonly attackerDies: boolean
+  /** Autres ennemis touchés (balayage, écrasement). */
+  readonly extraHits: number
+}
+
+/** Simule une attaque légale et résume ce qui se passerait. */
+export function previewAttack(state: GameState, action: Extract<Action, { kind: 'attack' }>): AttackPreview {
+  const { events } = resolveAction(state, action)
+  const target = state.pieces.find((piece) => samePos(piece.pos, action.target))
+  let damage = 0
+  let riposteDamage = 0
+  let extraHits = 0
+  for (const event of events) {
+    if (event.type === 'attack' && event.targetId === target?.id) damage += event.damage
+    else if (event.type === 'riposte' && event.targetId === action.pieceId) riposteDamage += event.damage
+    else if ((event.type === 'sweep' || event.type === 'crush') && event.damage > 0) extraHits += 1
+  }
+  const captured = (id: string | undefined) => events.some((event) => event.type === 'capture' && event.pieceId === id)
+  return { damage, kills: captured(target?.id), riposteDamage, attackerDies: captured(action.pieceId), extraHits }
+}

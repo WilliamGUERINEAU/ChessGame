@@ -43,5 +43,7 @@ function goalSummary(goal: GoalDefinition, t: TFunction): string {
       return t('goal.survive', { rounds: goal.rounds })
     case 'capture':
       return goal.maxRounds ? t('goal.captureLimited', { rounds: goal.maxRounds }) : t('goal.capture')
+    case 'intercept':
+      return t('goal.intercept', { rounds: goal.rounds })
   }
 }

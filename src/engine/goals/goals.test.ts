@@ -150,3 +150,45 @@ describe('blocage', () => {
     expect(after.status).toBe('ongoing')
   })
 })
+
+describe('objectif : interception', () => {
+  const exits = [{ x: 0, y: 2 }]
+  const level = () =>
+    testLevel({
+      terrain: ['....', '....', '....'],
+      units: ['n..K', '', '....'],
+      hero: { x: 3, y: 0 },
+      goal: { kind: 'intercept', exits, rounds: 2 },
+    })
+
+  it('est perdu dès qu’un ennemi atteint une sortie', () => {
+    const state = level()
+    // Le Cavalier (0,0) saute en (1,2) puis… on le laisse plutôt aller directement : (0,0) → (1,2) n'est pas la sortie.
+    const after = play(state, move(idAt(state, 3, 0), 3, 1), move(idAt(state, 0, 0), 1, 2)).state
+    expect(after.status).toBe('ongoing')
+    const exitState = testLevel({
+      terrain: ['....', '....', '....'],
+      units: ['...K', '..n.', '....'],
+      hero: { x: 3, y: 0 },
+      goal: { kind: 'intercept', exits, rounds: 2 },
+    })
+    const lost = play(exitState, move(idAt(exitState, 3, 0), 3, 1), move(idAt(exitState, 2, 1), 0, 2)).state
+    expect(lost).toMatchObject({ status: 'lost', endReason: 'escaped' })
+  })
+
+  it('est gagné après le nombre de tours demandé sans fuite', () => {
+    const state = level()
+    const hero = idAt(state, 3, 0)
+    const knight = idAt(state, 0, 0)
+    const after = play(state, move(hero, 3, 1), move(knight, 2, 1), move(hero, 3, 0), move(knight, 0, 0)).state
+    expect(after).toMatchObject({ status: 'won', endReason: 'survived' })
+  })
+
+  it('refuse une sortie impossible ou absente', () => {
+    const base = { terrain: ['....'], units: ['n..K'], hero: { x: 3, y: 0 } }
+    expect(() => testLevel({ ...base, goal: { kind: 'intercept', exits: [], rounds: 2 } })).toThrow(/sans sortie/)
+    expect(() => testLevel({ ...base, goal: { kind: 'intercept', exits: [{ x: 9, y: 9 }], rounds: 2 } })).toThrow(
+      /case impossible/,
+    )
+  })
+})

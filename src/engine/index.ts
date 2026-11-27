@@ -2,7 +2,14 @@
  * Moteur de règles : TypeScript pur, sans dépendance à l'interface.
  * Toutes les fonctions sont déterministes et ne modifient jamais leurs entrées.
  */
-export { applyAction, IllegalActionError, type ActionResult, type GameEvent } from './apply'
+export {
+  applyAction,
+  IllegalActionError,
+  previewAttack,
+  type ActionResult,
+  type AttackPreview,
+  type GameEvent,
+} from './apply'
 export {
   boardCells,
   boardToAscii,
@@ -43,7 +50,7 @@ export {
   type Outcome,
   type Status,
 } from './goals/goals'
-export { legalActions, pieceActions, sameAction, type Action } from './moves'
+export { legalActions, pieceActions, sameAction, threatenedCells, type Action } from './moves'
 export {
   opponent,
   PIECE_LETTERS,

@@ -12,6 +12,7 @@ import {
   type Piece,
   type Pos,
 } from '../../engine'
+import type { AttackPreview } from '../../engine'
 import type { Highlights } from '../game/interaction'
 import { PieceGlyph } from './PieceGlyph'
 import { hasPromotionPawn, nextReinforcements } from './promotion'
@@ -72,6 +73,11 @@ export function Board({
   const wave = nextReinforcements(state)
   const reinforcementKeys = new Set(wave?.pieces.map((piece) => posKey(piece.pos)) ?? [])
 
+  const exits = state.goal.kind === 'intercept' ? state.goal.exits : []
+  const exitKeys = new Set(exits.map(posKey))
+  const threatKeys = new Set(highlights.threats.map(posKey))
+  const previewAt = new Map(highlights.previews.map((entry) => [posKey(entry.pos), entry.preview]))
+
   const roles = new Map<string, CellRole>()
   for (const p of zone) roles.set(posKey(p), 'deploy')
   for (const p of highlights.moves) roles.set(posKey(p), 'move')
@@ -101,6 +107,16 @@ export function Board({
     if (enemyPromotionKeys.has(posKey(p))) parts.push(t('a11y.enemyPromotion'))
     if (wave && reinforcementKeys.has(posKey(p))) parts.push(t('a11y.reinforcement', { round: wave.round }))
     if (role) parts.push(t(`a11y.${role}`))
+    if (exitKeys.has(posKey(p))) parts.push(t('a11y.exit'))
+    if (threatKeys.has(posKey(p))) parts.push(t('a11y.threat'))
+    const preview = previewAt.get(posKey(p))
+    if (preview) {
+      parts.push(preview.kills ? t('a11y.previewKill') : t('a11y.previewDamage', { damage: preview.damage }))
+      if (preview.riposteDamage > 0) {
+        parts.push(preview.attackerDies ? t('a11y.previewRiposteKill') : t('a11y.previewRiposte', { damage: preview.riposteDamage }))
+      }
+      if (preview.extraHits > 0) parts.push(t('a11y.previewExtra', { count: preview.extraHits }))
+    }
     return parts.join(', ')
   }
 
@@ -130,11 +146,17 @@ export function Board({
         {promotion.map((p) => (
           <PromotionMark key={`promo-${posKey(p)}`} pos={p} forward={forward} />
         ))}
+        {exits.map((p) => (
+          <ExitMark key={`exit-${posKey(p)}`} pos={p} />
+        ))}
         {enemyPromotion.map((p) => (
           <PromotionMark key={`epromo-${posKey(p)}`} pos={p} forward={enemyForward} enemy />
         ))}
         {wave?.pieces.map((piece) => (
           <ReinforcementMark key={`reinf-${piece.id}`} pos={piece.pos} round={wave.round} />
+        ))}
+        {highlights.threats.map((p) => (
+          <ThreatMark key={`threat-${posKey(p)}`} pos={p} />
         ))}
         {lastMove &&
           [lastMove.from, lastMove.to].map((p, i) => (
@@ -186,6 +208,12 @@ export function Board({
             isTarget={piece.id === targetId}
             hitKey={hits.includes(piece.id) ? hitKey : null}
           />
+        ))}
+      </g>
+
+      <g className="previews" aria-hidden="true">
+        {highlights.previews.map(({ pos, preview }) => (
+          <AttackPreviewMark key={`preview-${posKey(pos)}`} pos={pos} preview={preview} />
         ))}
       </g>
 
@@ -330,6 +358,56 @@ export function ReinforcementMark({ pos, round }: { pos: Pos; round: number }) {
       <text x={x + CELL / 2} y={y + CELL / 2} textAnchor="middle" dominantBaseline="central">
         {round}
       </text>
+    </g>
+  )
+}
+
+/** Case menacée par l'ennemi : voile rouge hachuré (la hachure ne dépend pas de la couleur). */
+export function ThreatMark({ pos }: { pos: Pos }) {
+  const x = pos.x * CELL
+  const y = pos.y * CELL
+  return (
+    <g className="mark-threat">
+      <rect x={x} y={y} width={CELL} height={CELL} />
+      <path d={`M${x} ${y + 34} L${x + 34} ${y} M${x} ${y + 67} L${x + 67} ${y} M${x} ${y + 100} L${x + 100} ${y}`} />
+    </g>
+  )
+}
+
+/** Résultat prévu d'une attaque, affiché sur la cible : dégâts ou K.O., puis riposte éventuelle. */
+function AttackPreviewMark({ pos, preview }: { pos: Pos; preview: AttackPreview }) {
+  const cx = pos.x * CELL + CELL / 2
+  const y = pos.y * CELL
+  const main = preview.kills ? 'K.O.' : `−${preview.damage}`
+  const riposte = preview.riposteDamage > 0 ? (preview.attackerDies ? '↩ K.O.' : `↩ −${preview.riposteDamage}`) : null
+  return (
+    <g className="mark-preview">
+      <g className={preview.kills ? 'preview-pill preview-pill--kill' : 'preview-pill'}>
+        <rect x={cx - 30} y={y + 30} width="60" height="26" rx="13" />
+        <text x={cx} y={y + 49} textAnchor="middle">
+          {main}
+        </text>
+      </g>
+      {riposte && (
+        <g className="preview-pill preview-pill--riposte">
+          <rect x={cx - 34} y={y + 58} width="68" height="22" rx="11" />
+          <text x={cx} y={y + 74} textAnchor="middle">
+            {riposte}
+          </text>
+        </g>
+      )}
+    </g>
+  )
+}
+
+/** Sortie d'un niveau d'interception : un ennemi qui l'atteint fait perdre. Cadre plein et flèche. */
+export function ExitMark({ pos }: { pos: Pos }) {
+  const x = pos.x * CELL
+  const y = pos.y * CELL
+  return (
+    <g className="mark-exit">
+      <rect x={x + 3} y={y + 3} width={CELL - 6} height={CELL - 6} rx="10" />
+      <path d={`M${x + 50} ${y + 22} V${y + 70} M${x + 32} ${y + 54} L${x + 50} ${y + 72} L${x + 68} ${y + 54}`} />
     </g>
   )
 }

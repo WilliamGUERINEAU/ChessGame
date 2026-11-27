@@ -939,3 +939,78 @@ button.army-item.is-selected {
   font-weight: 600;
   color: var(--danger);
 }
+
+/* Menaces et aperçu d'attaque */
+.mark-threat rect {
+  fill: var(--mark-attack);
+  opacity: 0.16;
+}
+
+.mark-threat path {
+  stroke: var(--mark-attack);
+  stroke-width: 3;
+  opacity: 0.45;
+}
+
+.previews {
+  pointer-events: none;
+}
+
+.preview-pill rect {
+  fill: var(--surface);
+  stroke: var(--mark-attack);
+  stroke-width: 3;
+}
+
+.preview-pill text {
+  fill: var(--mark-attack);
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.preview-pill--kill rect {
+  fill: var(--mark-attack);
+}
+
+.preview-pill--kill text {
+  fill: #ffffff;
+}
+
+.preview-pill--riposte rect {
+  stroke: var(--text);
+}
+
+.preview-pill--riposte text {
+  fill: var(--text);
+  font-size: 16px;
+}
+
+.button-toggle[aria-pressed='true'] {
+  background: var(--mark-attack);
+  border-color: var(--mark-attack);
+  color: #ffffff;
+}
+
+.game-round--urgent {
+  color: var(--danger);
+}
+
+.game-round--urgent::before {
+  content: '⏳ ';
+}
+
+.mark-exit rect {
+  fill: var(--danger);
+  fill-opacity: 0.14;
+  stroke: var(--danger);
+  stroke-width: 4;
+}
+
+.mark-exit path {
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}

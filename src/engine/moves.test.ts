@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { applyAction } from './apply'
-import { legalActions, pieceActions } from './moves'
+import { applyAction, previewAttack } from './apply'
+import { legalActions, pieceActions, threatenedCells } from './moves'
+import { findPiece } from './state'
 import { attackKeys, idAt, moveKeys, testLevel } from './testing'
 
 describe('glissades (Tour, Fou, Dame)', () => {
@@ -172,5 +173,43 @@ describe('legalActions', () => {
   it('propose de passer quand le camp est bloqué', () => {
     const state = testLevel({ terrain: ['.~.'], units: ['R.k'] })
     expect(legalActions(state)).toEqual([{ kind: 'pass' }])
+  })
+})
+
+describe('threatenedCells', () => {
+  it('une Tour menace ses trajectoires libres et la première pièce adverse', () => {
+    const state = testLevel({ terrain: ['.....', '.....'], units: ['K.r.P', '..p..'] })
+    const keys = (id: string) =>
+      threatenedCells(state, findPiece(state, id)!)
+        .map((p) => `${p.x},${p.y}`)
+        .sort()
+    // Tour ennemie en (2,0) : (1,0) puis le Roi en (0,0) ; (3,0) puis le Pion en (4,0) ; pas sa propre pièce en (2,1).
+    expect(keys(idAt(state, 2, 0))).toEqual(['0,0', '1,0', '3,0', '4,0'])
+  })
+
+  it('un Pion ne menace que ses diagonales avant', () => {
+    const state = testLevel({ terrain: ['...', '...', '...'], units: ['K..', '.p.', '...'] })
+    const cells = threatenedCells(state, findPiece(state, idAt(state, 1, 1))!).map((p) => `${p.x},${p.y}`).sort()
+    expect(cells).toEqual(['0,2', '2,2'])
+  })
+})
+
+describe('previewAttack', () => {
+  it('annonce les dégâts, la mort de la cible et la riposte, sans modifier la partie', () => {
+    const state = testLevel({
+      terrain: ['....'],
+      units: ['R..r'],
+      stats: { '3,0': { hp: 5, powers: ['riposte'] } },
+    })
+    const rook = idAt(state, 0, 0)
+    const preview = previewAttack(state, { kind: 'attack', pieceId: rook, target: { x: 3, y: 0 } })
+    expect(preview).toEqual({ damage: 2, kills: false, riposteDamage: 2, attackerDies: false, extraHits: 0 })
+    expect(findPiece(state, idAt(state, 3, 0))?.hp).toBe(5)
+
+    const weak = testLevel({ terrain: ['....'], units: ['R..p'] })
+    expect(previewAttack(weak, { kind: 'attack', pieceId: idAt(weak, 0, 0), target: { x: 3, y: 0 } })).toMatchObject({
+      kills: true,
+      riposteDamage: 0,
+    })
   })
 })

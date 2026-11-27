@@ -176,6 +176,16 @@ export function createLevel(def: LevelDefinition): GameState {
       }
       goal = def.goal
       break
+    case 'intercept':
+      if (!isPositiveInteger(def.goal.rounds)) {
+        throw new Error(`Nombre de tours d'interception invalide : ${def.goal.rounds}`)
+      }
+      if (def.goal.exits.length === 0) throw new Error('Interception sans sortie')
+      for (const exit of def.goal.exits) {
+        if (!isStandable(board, exit)) throw new Error(`Sortie sur une case impossible ${where(exit)}`)
+      }
+      goal = def.goal
+      break
     case 'capture': {
       const { target: targetPos, maxRounds } = def.goal
       const target = pieces.find((piece) => samePos(piece.pos, targetPos))

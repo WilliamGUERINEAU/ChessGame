@@ -27,6 +27,10 @@
       "name": "Lac gelé",
       "description": "Un lac gelé au milieu de la carte. La glace fait glisser vos pièces ; l’eau ne se franchit qu’en sautant."
     },
+    "the-pass": {
+      "name": "Le col",
+      "description": "Trois ennemis foncent vers les sorties de votre camp. Barrez-leur la route pendant 6 tours."
+    },
     "hold-the-line": {
       "name": "Tenir la ligne",
       "description": "Quatre ennemis foncent sur votre héros, et des renforts surgissent sur les flancs. Tenez 5 tours."
@@ -42,15 +46,16 @@
     "survive": "Survivez {{rounds}} tours",
     "capture": "Capturez la cible",
     "captureLimited": "Capturez la cible en {{rounds}} tours",
-    "eliminateLimited": "Capturez toutes les pièces ennemies en {{rounds}} tours"
+    "eliminateLimited": "Capturez toutes les pièces ennemies en {{rounds}} tours",
+    "intercept": "Empêchez les ennemis d’atteindre une sortie pendant {{rounds}} tours"
   },
   "game": {
     "round": "Tour {{round}}",
     "roundOf": "Tour {{round}} / {{total}}",
     "yourTurn": "À vous de jouer",
     "enemyTurn": "L'ennemi réfléchit…",
-    "selectPiece": "Touchez une de vos pièces.",
-    "chooseTarget": "Touchez une case en surbrillance, ou une autre pièce.",
+    "selectPiece": "Touchez une de vos pièces, ou un ennemi pour voir sa portée.",
+    "chooseTarget": "Touchez une case en surbrillance (le résultat d’une attaque est affiché sur la cible), ou une autre pièce.",
     "chooseLanding": "La cible survit : choisissez où atterrir.",
     "noMoves": "Aucune de vos pièces ne peut agir.",
     "pass": "Passer le tour",
@@ -76,7 +81,15 @@
     "reinforcementsLegend": "Renforts",
     "reinforcementsRule": "des ennemis arriveront sur cette case au tour indiqué (si elle est libre).",
     "enemyPromotionLine": "Ligne de promotion ennemie",
-    "enemyPromotionRule": "un Pion ennemi qui l’atteint devient une Dame."
+    "enemyPromotionRule": "un Pion ennemi qui l’atteint devient une Dame.",
+    "threats": "Menaces ennemies",
+    "inspectHint": "Cases hachurées : ce que cette pièce ennemie peut attaquer au prochain coup.",
+    "threatLegend": "Case menacée",
+    "threatRule": "un ennemi peut y attaquer au prochain coup (bouton « Menaces ennemies » ou ennemi touché).",
+    "timeWarning_one": "Dernier tour pour réussir !",
+    "timeWarning_other": "Plus que {{count}} tours !",
+    "exitLegend": "Sortie",
+    "exitRule": "si un ennemi l’atteint, vous perdez. Barrez-lui la route ou occupez-la."
   },
   "end": {
     "won": "Victoire !",
@@ -87,7 +100,8 @@
       "targetCaptured": "La cible est tombée.",
       "heroDied": "Votre héros est tombé.",
       "timeUp": "Le temps est écoulé.",
-      "stalemate": "Plus personne ne peut jouer."
+      "stalemate": "Plus personne ne peut jouer.",
+      "escaped": "Un ennemi a atteint une sortie."
     }
   },
   "pieces": {
@@ -150,7 +164,15 @@
     "shield": "bouclier actif",
     "promotion": "ligne de promotion",
     "enemyPromotion": "ligne de promotion ennemie",
-    "reinforcement": "renforts ennemis au tour {{round}}"
+    "reinforcement": "renforts ennemis au tour {{round}}",
+    "threat": "menacée par l’ennemi",
+    "previewKill": "attaque : cible éliminée",
+    "previewDamage": "attaque : {{damage}} dégâts",
+    "previewRiposte": "riposte : vous perdez {{damage}} PV",
+    "previewRiposteKill": "riposte : votre pièce est éliminée",
+    "previewExtra_one": "{{count}} autre ennemi touché",
+    "previewExtra_other": "{{count}} autres ennemis touchés",
+    "exit": "sortie ennemie"
   },
   "classes": {
     "title": "Choisissez votre héros",

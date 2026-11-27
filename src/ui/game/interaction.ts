@@ -2,8 +2,11 @@ import {
   pieceActions,
   pieceAt,
   posKey,
+  previewAttack,
   samePos,
+  threatenedCells,
   type Action,
+  type AttackPreview,
   type GameEvent,
   type GameState,
   type PieceType,
@@ -15,6 +18,8 @@ import {
 export type Selection =
   | { readonly kind: 'none' }
   | { readonly kind: 'piece'; readonly pieceId: string }
+  /** Pièce ennemie observée : on montre sa portée et sa fiche. */
+  | { readonly kind: 'inspect'; readonly pieceId: string }
   /** Attaque choisie dont la cible survit : reste à choisir la case d'atterrissage. */
   | {
       readonly kind: 'landing'
@@ -66,29 +71,72 @@ export function interpretClick(state: GameState, selection: Selection, pos: Pos)
   if (clicked?.side === 'player') {
     return { kind: 'select', selection: { kind: 'piece', pieceId: clicked.id } }
   }
+  if (clicked?.side === 'enemy') {
+    const again = selection.kind === 'inspect' && selection.pieceId === clicked.id
+    return { kind: 'select', selection: again ? NO_SELECTION : { kind: 'inspect', pieceId: clicked.id } }
+  }
   return { kind: 'select', selection: NO_SELECTION }
+}
+
+/** Résultat prévu d'une attaque sur une case. */
+export interface TargetPreview {
+  readonly pos: Pos
+  readonly preview: AttackPreview
 }
 
 export interface Highlights {
   readonly moves: readonly Pos[]
   readonly attacks: readonly Pos[]
   readonly landings: readonly Pos[]
+  /** Cases menacées par l'ennemi (pièce observée ou bouton « Menaces »). */
+  readonly threats: readonly Pos[]
+  /** Résultat prévu de chaque attaque possible. */
+  readonly previews: readonly TargetPreview[]
 }
+
+export const NO_HIGHLIGHTS: Highlights = { moves: [], attacks: [], landings: [], threats: [], previews: [] }
 
 /** Cases à mettre en évidence pour la sélection courante. */
 export function highlightsFor(state: GameState, selection: Selection): Highlights {
-  if (selection.kind === 'none') return { moves: [], attacks: [], landings: [] }
+  if (selection.kind === 'none') return NO_HIGHLIGHTS
+  if (selection.kind === 'inspect') {
+    const piece = state.pieces.find((candidate) => candidate.id === selection.pieceId)
+    return { ...NO_HIGHLIGHTS, threats: piece ? threatenedCells(state, piece) : [] }
+  }
   if (selection.kind === 'landing') {
-    return { moves: [], attacks: [selection.target], landings: selection.options }
+    const previews = previewsFor(
+      state,
+      selection.options.map((landing): Action => ({ kind: 'attack', pieceId: selection.pieceId, target: selection.target, landing })),
+    )
+    return { ...NO_HIGHLIGHTS, attacks: [selection.target], landings: selection.options, previews }
   }
   const actions = pieceActions(state, selection.pieceId)
-  const attacks = new Map<string, Pos>()
-  for (const action of actions) if (action.kind === 'attack') attacks.set(posKey(action.target), action.target)
   return {
+    ...NO_HIGHLIGHTS,
     moves: actions.flatMap((action) => (action.kind === 'move' ? [action.to] : [])),
-    attacks: [...attacks.values()],
-    landings: [],
+    attacks: previewsFor(state, actions).map((entry) => entry.pos),
+    previews: previewsFor(state, actions),
   }
+}
+
+/** Cases menacées par toutes les pièces ennemies. */
+export function enemyThreats(state: GameState): Pos[] {
+  const cells = new Map<string, Pos>()
+  for (const piece of state.pieces) {
+    if (piece.side !== 'enemy') continue
+    for (const p of threatenedCells(state, piece)) cells.set(posKey(p), p)
+  }
+  return [...cells.values()]
+}
+
+/** Un aperçu par cible (la première case d'atterrissage sert d'exemple : le résultat est le même). */
+function previewsFor(state: GameState, actions: readonly Action[]): TargetPreview[] {
+  const byTarget = new Map<string, TargetPreview>()
+  for (const action of actions) {
+    if (action.kind !== 'attack' || byTarget.has(posKey(action.target))) continue
+    byTarget.set(posKey(action.target), { pos: action.target, preview: previewAttack(state, action) })
+  }
+  return [...byTarget.values()]
 }
 
 /** Pièce nommée dans le journal (type et camp, figés au moment de l'événement). */

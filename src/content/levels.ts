@@ -18,10 +18,12 @@ export interface LevelContent {
   readonly aiDepth: number
   /** Agressivité de l'IA ennemie (voir `AiOptions.aggression`). */
   readonly aiAggression: number
+  /** Audace de l'IA ennemie (voir `AiOptions.boldness`). */
+  readonly aiBoldness: number
 }
 
 /** Réglages par défaut de l'IA des niveaux, choisis d'après des parties IA contre IA. */
-export const DEFAULT_LEVEL_AI = { depth: 3, aggression: 0.5 } as const
+export const DEFAULT_LEVEL_AI = { depth: 3, aggression: 1, boldness: 0.3 } as const
 
 interface LevelSpec {
   /** Plateau en texte : `.` sol, `f` forêt, `~` eau, `#` mur, `i` glace, espace = vide. */
@@ -37,6 +39,7 @@ interface LevelSpec {
   readonly stats?: Readonly<Record<string, Partial<Pick<UnitSpec, 'id' | 'hp' | 'maxHp' | 'atk'>>>>
   readonly aiDepth?: number
   readonly aiAggression?: number
+  readonly aiBoldness?: number
   /** Renforts : au tour `round`, les pièces écrites en texte comme `units` arrivent. */
   readonly reinforcements?: readonly { readonly round: number; readonly units: readonly string[] }[]
 }
@@ -56,6 +59,7 @@ function level(id: string, spec: LevelSpec): LevelContent {
     deployment: cellsMarked(spec.deployment),
     aiDepth: spec.aiDepth ?? DEFAULT_LEVEL_AI.depth,
     aiAggression: spec.aiAggression ?? DEFAULT_LEVEL_AI.aggression,
+    aiBoldness: spec.aiBoldness ?? DEFAULT_LEVEL_AI.boldness,
     definition: {
       terrain: spec.terrain,
       units,
@@ -170,6 +174,37 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     aiAggression: 1,
   }),
 
+  level('the-pass', {
+    terrain: [
+      '.........',
+      '.........',
+      '.f.....f.',
+      '.........',
+      '..#...#..',
+      'f.......f',
+      '.........',
+      '.........',
+      '.........',
+      '.........',
+    ],
+    units: [
+      '.n....rn.',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '...BKR...',
+    ],
+    deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
+    hero: { x: 4, y: 9 },
+    // Interception : les ennemis visent les deux coins de votre camp.
+    goal: { kind: 'intercept', exits: [{ x: 0, y: 9 }, { x: 8, y: 9 }], rounds: 6 },
+  }),
+
   level('hold-the-line', {
     terrain: [
       '.........',
@@ -234,6 +269,8 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
     goal: { kind: 'capture', target: { x: 1, y: 0 }, maxRounds: 12 },
+    // Plus agressifs, les gardes délaissent la Gardienne et le niveau devient trivial.
+    aiAggression: 0.5,
     stats: { '1,0': { id: 'warden', hp: 5 } },
   }),
 ]

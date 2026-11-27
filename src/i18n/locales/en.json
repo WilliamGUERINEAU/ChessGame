@@ -27,6 +27,10 @@
       "name": "Frozen lake",
       "description": "A frozen lake in the middle of the map. Ice makes your pieces slide; water can only be jumped over."
     },
+    "the-pass": {
+      "name": "The pass",
+      "description": "Three enemies rush for the exits of your camp. Block their way for 6 rounds."
+    },
     "hold-the-line": {
       "name": "Hold the line",
       "description": "Four enemies rush your hero, and reinforcements burst in on the flanks. Hold for 5 rounds."
@@ -42,15 +46,16 @@
     "survive": "Survive {{rounds}} rounds",
     "capture": "Capture the target",
     "captureLimited": "Capture the target within {{rounds}} rounds",
-    "eliminateLimited": "Capture every enemy piece within {{rounds}} rounds"
+    "eliminateLimited": "Capture every enemy piece within {{rounds}} rounds",
+    "intercept": "Stop the enemies from reaching an exit for {{rounds}} rounds"
   },
   "game": {
     "round": "Round {{round}}",
     "roundOf": "Round {{round}} / {{total}}",
     "yourTurn": "Your turn",
     "enemyTurn": "The enemy is thinking…",
-    "selectPiece": "Tap one of your pieces.",
-    "chooseTarget": "Tap a highlighted square, or another piece.",
+    "selectPiece": "Tap one of your pieces, or an enemy to see its reach.",
+    "chooseTarget": "Tap a highlighted square (an attack's result is shown on its target), or another piece.",
     "chooseLanding": "The target survives: choose where to land.",
     "noMoves": "None of your pieces can act.",
     "pass": "Pass the turn",
@@ -76,7 +81,15 @@
     "reinforcementsLegend": "Reinforcements",
     "reinforcementsRule": "enemies will arrive on this square on the round shown (if it is free).",
     "enemyPromotionLine": "Enemy promotion line",
-    "enemyPromotionRule": "an enemy pawn reaching it becomes a queen."
+    "enemyPromotionRule": "an enemy pawn reaching it becomes a queen.",
+    "threats": "Enemy threats",
+    "inspectHint": "Hatched squares: what this enemy piece can attack next move.",
+    "threatLegend": "Threatened square",
+    "threatRule": "an enemy can attack there next move (“Enemy threats” button or tapped enemy).",
+    "timeWarning_one": "Last round to succeed!",
+    "timeWarning_other": "Only {{count}} rounds left!",
+    "exitLegend": "Exit",
+    "exitRule": "if an enemy reaches it, you lose. Block its path or stand on it."
   },
   "end": {
     "won": "Victory!",
@@ -87,7 +100,8 @@
       "targetCaptured": "The target has fallen.",
       "heroDied": "Your hero has fallen.",
       "timeUp": "Time is up.",
-      "stalemate": "Nobody can move anymore."
+      "stalemate": "Nobody can move anymore.",
+      "escaped": "An enemy reached an exit."
     }
   },
   "pieces": {
@@ -150,7 +164,15 @@
     "shield": "shield up",
     "promotion": "promotion line",
     "enemyPromotion": "enemy promotion line",
-    "reinforcement": "enemy reinforcements on round {{round}}"
+    "reinforcement": "enemy reinforcements on round {{round}}",
+    "threat": "threatened by the enemy",
+    "previewKill": "attack: target eliminated",
+    "previewDamage": "attack: {{damage}} damage",
+    "previewRiposte": "riposte: you lose {{damage}} HP",
+    "previewRiposteKill": "riposte: your piece is eliminated",
+    "previewExtra_one": "{{count}} other enemy hit",
+    "previewExtra_other": "{{count}} other enemies hit",
+    "exit": "enemy exit"
   },
   "classes": {
     "title": "Choose your hero",

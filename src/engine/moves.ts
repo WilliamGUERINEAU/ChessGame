@@ -51,6 +51,23 @@ export function attackTargetsOf(state: Pick<GameState, 'board' | 'pieces' | 'for
   return reach(state as GameState, piece).targets
 }
 
+/**
+ * Cases que la pièce menace : celles où une pièce adverse pourrait être attaquée au
+ * prochain coup (cases libres de ses trajectoires comprises). Le Pion ne menace que
+ * ses diagonales avant.
+ */
+export function threatenedCells(state: Pick<GameState, 'board' | 'pieces' | 'forward'>, piece: Piece): Pos[] {
+  if (piece.type === 'pawn') {
+    const forward = DIRECTION_VECTORS[state.forward[piece.side]]
+    const one = add(piece.pos, forward)
+    return perpendiculars(forward)
+      .map((side) => add(one, side))
+      .filter((p) => isStandable(state.board, p) && pieceAt(state, p)?.side !== piece.side)
+  }
+  const { moves, targets } = reach(state as GameState, piece)
+  return [...moves, ...targets.map((target) => target.pos)]
+}
+
 export function sameAction(a: Action, b: Action): boolean {
   if (a.kind === 'pass' || b.kind === 'pass') return a.kind === b.kind
   if (a.kind === 'move' && b.kind === 'move') {

@@ -23,6 +23,11 @@ export interface AiOptions {
   readonly playerApproach?: number
   /** Approche du héros du joueur vers l'objectif (0 par défaut : il reste en retrait). */
   readonly heroApproach?: number
+  /**
+   * Audace de l'ennemi (0 à 1) : part de la valeur de ses propres pièces qu'il accepte
+   * de risquer. À 0,5, un échange de pièces égales lui paraît avantageux : il attaque.
+   */
+  readonly boldness?: number
 }
 
 export const DEFAULT_AI_DEPTH = 2
@@ -36,6 +41,8 @@ export const CORNERED_MAX_PIECES = 2
 /** Actions sans attaque, tous camps confondus, avant que les ennemis passent à l'attaque (3 tours). */
 export const CORNERED_QUIET_PLIES = 6
 export const CORNERED_AGGRESSION = 2
+/** Acculés, les ennemis ne ménagent plus leurs pièces (audace minimale). */
+export const CORNERED_BOLDNESS = 0.8
 
 export function enemiesCornered(state: Pick<GameState, 'pieces' | 'quietPlies'>): boolean {
   const enemies = state.pieces.filter((piece) => piece.side === 'enemy').length
@@ -45,6 +52,12 @@ export function enemiesCornered(state: Pick<GameState, 'pieces' | 'quietPlies'>)
 /** Agressivité effective, décidée une fois pour toute la recherche à partir de la position actuelle. */
 export function effectiveAggression(state: Pick<GameState, 'pieces' | 'quietPlies'>, base: number): number {
   return enemiesCornered(state) ? Math.max(base, CORNERED_AGGRESSION) : base
+}
+
+/** Audace effective : renforcée quand les ennemis sont acculés. */
+export function effectiveBoldness(state: Pick<GameState, 'pieces' | 'quietPlies'>, base: number): number {
+  const clamped = Math.min(1, Math.max(0, base))
+  return enemiesCornered(state) ? Math.max(clamped, CORNERED_BOLDNESS) : clamped
 }
 
 /** Valeur d'une pièce par type, hors PV. */
@@ -73,6 +86,8 @@ const HERO_HP_VALUE = 3
 const SURVIVE_HERO_HP_VALUE = 8
 /** Valeur supplémentaire de la cible d'un niveau de capture. */
 const TARGET_BONUS = 6
+/** Interception : valeur de chaque case gagnée par un ennemi vers la sortie la plus proche. */
+const EXIT_APPROACH = 1
 /** Poids de l'approche des pièces du joueur vers leur objectif (parties IA contre IA). */
 const PLAYER_APPROACH = 0.1
 /** Score d'une partie gagnée (bien au-dessus de toute différence de matériel). */
@@ -84,6 +99,14 @@ interface Weights {
   readonly enemyApproach: number
   readonly playerApproach: number
   readonly heroApproach: number
+  /** Poids de la valeur des pièces ennemies (1 − audace). */
+  readonly enemySelfValue: number
+  /**
+   * L'IA ennemie ne compte pas sur la limite de tours : une défaite « temps écoulé »
+   * du joueur ne vaut rien de plus pour elle que la position. Elle se bat au lieu de
+   * jouer la montre (le joueur simulé, lui, la redoute).
+   */
+  readonly ignoreClock: boolean
 }
 
 /**
@@ -111,6 +134,8 @@ export function rankActions(state: GameState, options: AiOptions = {}): RankedAc
     enemyApproach: effectiveAggression(state, options.aggression ?? DEFAULT_AGGRESSION),
     playerApproach: options.playerApproach ?? PLAYER_APPROACH,
     heroApproach: options.heroApproach ?? 0,
+    enemySelfValue: 1 - effectiveBoldness(state, options.boldness ?? 0),
+    ignoreClock: state.sideToMove === 'enemy',
   }
   const actions = orderActions(legalActions(state))
   if (actions.length <= 1) return actions.map((action) => ({ action, score: 0 }))
@@ -180,7 +205,9 @@ function evaluate(state: GameState, ply: number, weights: Weights): number {
 function evaluateForEnemy(state: GameState, ply: number, weights: Weights): number {
   const position = positionForEnemy(state, weights)
   if (state.status === 'won') return -WIN_SCORE + ply * PLY_COST + position
-  if (state.status === 'lost') return WIN_SCORE - ply * PLY_COST + position
+  if (state.status === 'lost' && !(weights.ignoreClock && state.endReason === 'timeUp')) {
+    return WIN_SCORE - ply * PLY_COST + position
+  }
   return position
 }
 
@@ -199,7 +226,7 @@ function positionForEnemy(state: GameState, weights: Weights): number {
     value += piece.powers.length * POWER_VALUE + (piece.shieldActive ? SHIELD_VALUE : 0)
     if (piece.id === state.heroId) value += piece.hp * heroHpValue
     if (piece.id === targetId) value += TARGET_BONUS
-    score += piece.side === 'enemy' ? value : -value
+    score += piece.side === 'enemy' ? value * weights.enemySelfValue : -value
   }
 
   // L'ennemi converge vers le héros (sauf la cible, qui se garde) ;
@@ -209,8 +236,13 @@ function positionForEnemy(state: GameState, weights: Weights): number {
   // pièce lointaine « améliorerait » la position de son camp).
   const board = state.board
   const reach = board.width + board.height
+  const exits = state.goal.kind === 'intercept' ? state.goal.exits : null
   for (const piece of state.pieces) {
-    if (piece.side === 'enemy' && hero && piece.id !== targetId) {
+    if (piece.side === 'enemy' && exits) {
+      // Interception : les ennemis courent vers la sortie la plus proche.
+      const nearest = Math.min(...exits.map((exit) => walkDistance(board, exit, piece.pos)))
+      score += EXIT_APPROACH * Math.max(0, reach - nearest)
+    } else if (piece.side === 'enemy' && hero && piece.id !== targetId) {
       score += weights.enemyApproach * Math.max(0, reach - walkDistance(board, hero.pos, piece.pos))
     } else if (piece.side === 'player' && objectives.length > 0) {
       const weight = piece.id === state.heroId ? weights.heroApproach : weights.playerApproach

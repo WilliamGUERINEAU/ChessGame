@@ -68,6 +68,7 @@ export default function App() {
             definition: level.definition,
             aiDepth: level.aiDepth,
             aiAggression: level.aiAggression,
+            aiBoldness: level.aiBoldness,
             seedKey: `${level.id}:${screen.attempt}`,
           }}
           mode={{

@@ -5,6 +5,7 @@ import type { AiRequest, AiResponse } from '../engine/ai/ai.worker'
 export interface AiSettings {
   readonly depth: number
   readonly aggression: number
+  readonly boldness: number
   readonly seed: number
 }
 
@@ -16,8 +17,8 @@ export interface AiClient {
 function chooseLocally(state: GameState, settings: AiSettings): Promise<Action> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const { depth, aggression, seed } = settings
-      resolve(chooseAction(state, { depth, aggression, rng: createRng(seed) }))
+      const { depth, aggression, boldness, seed } = settings
+      resolve(chooseAction(state, { depth, aggression, boldness, rng: createRng(seed) }))
     }, 0)
   })
 }

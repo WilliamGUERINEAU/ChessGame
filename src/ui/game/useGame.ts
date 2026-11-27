@@ -31,6 +31,7 @@ export interface BattleSetup {
   readonly definition: LevelDefinition
   readonly aiDepth: number
   readonly aiAggression: number
+  readonly aiBoldness: number
   /** Graine des choix de l'IA (avec le nombre d'actions jouées). */
   readonly seedKey: string
 }
@@ -108,7 +109,7 @@ export function useGame(setup: BattleSetup): GameController {
   const [model, dispatch] = useReducer(reducer, setup, initialModel)
   const { state, selection, plies } = model
   const thinking = state.status === 'ongoing' && state.sideToMove === 'enemy'
-  const { aiDepth, aiAggression, seedKey } = setup
+  const { aiDepth, aiAggression, aiBoldness, seedKey } = setup
 
   useEffect(() => {
     if (!thinking) return
@@ -117,7 +118,7 @@ export function useGame(setup: BattleSetup): GameController {
     const startedAt = performance.now()
     const seed = seedFromString(`${seedKey}:${plies}`)
     void getAiClient()
-      .choose(state, { depth: aiDepth, aggression: aiAggression, seed })
+      .choose(state, { depth: aiDepth, aggression: aiAggression, boldness: aiBoldness, seed })
       .then((action) => {
         if (cancelled) return
         const wait = Math.max(0, ENEMY_MIN_DELAY_MS - (performance.now() - startedAt))
@@ -127,7 +128,7 @@ export function useGame(setup: BattleSetup): GameController {
       cancelled = true
       if (timer !== undefined) clearTimeout(timer)
     }
-  }, [thinking, state, aiDepth, aiAggression, seedKey, plies])
+  }, [thinking, state, aiDepth, aiAggression, aiBoldness, seedKey, plies])
 
   const clickCell = useCallback(
     (pos: Pos) => {

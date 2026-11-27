@@ -8,6 +8,7 @@ import { kingDistance } from '../geometry'
 import { findPiece } from '../state'
 import {
   chooseAction,
+  rankActions,
   CORNERED_AGGRESSION,
   CORNERED_QUIET_PLIES,
   effectiveAggression,
@@ -181,5 +182,34 @@ describe('IA en survie', () => {
       kind: 'attack',
       target: { x: 2, y: 4 },
     })
+  })
+})
+
+describe('IA : interception et horloge', () => {
+  it('en interception, l’ennemi court vers la sortie', () => {
+    const state = testLevel({
+      terrain: ['.....', '.....', '.....', '.....', '.....'],
+      units: ['..k..', '', '', '', 'K....'],
+      hero: { x: 0, y: 4 },
+      goal: { kind: 'intercept', exits: [{ x: 2, y: 4 }], rounds: 9 },
+    })
+    const ranked = rankActions({ ...state, sideToMove: 'enemy' }, { depth: 1 })
+    const toward = ranked.filter((entry) => entry.action.kind === 'move' && entry.action.to.y === 1)
+    const sideways = ranked.filter((entry) => entry.action.kind === 'move' && entry.action.to.y === 0)
+    expect(toward.length).toBeGreaterThan(0)
+    expect(Math.min(...toward.map((entry) => entry.score))).toBeGreaterThan(Math.max(...sideways.map((entry) => entry.score)))
+  })
+
+  it('l’ennemi ne compte pas une défaite au temps du joueur comme une victoire', () => {
+    // Dernier tour : quoi que joue l'ennemi, le joueur perd au temps.
+    const state = testLevel({
+      terrain: ['.....', '.....', '.....'],
+      units: ['r....', '.....', '....K'],
+      hero: { x: 4, y: 2 },
+      goal: { kind: 'eliminate', maxRounds: 1 },
+    })
+    const scores = rankActions({ ...state, sideToMove: 'enemy' }, { depth: 1 }).map((entry) => entry.score)
+    // Seule la position compte (loin du score d'une victoire) : l'ennemi ne joue pas la montre.
+    expect(Math.max(...scores)).toBeLessThan(1000)
   })
 })

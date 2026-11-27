@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { findPiece, type GameState, type Goal, type Piece, type Terrain } from '../../engine'
 import { enemiesCornered } from '../../engine/ai/ai'
-import { Board, PromotionMark, ReinforcementMark } from '../board/Board'
+import { Board, ExitMark, PromotionMark, ReinforcementMark, ThreatMark } from '../board/Board'
 import { hasPromotionPawn, nextReinforcements } from '../board/promotion'
 import { PieceGlyph } from '../board/PieceGlyph'
 import { CELL, TerrainTile } from '../board/TerrainTile'
 import { Dialog, type DialogAction } from '../Dialog'
-import type { LogEntry, PieceLabel } from '../game/interaction'
+import { enemyThreats, type Highlights, type LogEntry, type PieceLabel } from '../game/interaction'
+import { roundLimit, roundsBeforeTimeUp, TIME_WARNING_ROUNDS } from '../game/time'
 import { useGame, type BattleSetup } from '../game/useGame'
 import { powerNames } from '../powers'
 
@@ -44,17 +45,25 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
   const { t } = useTranslation()
   const game = useGame(setup)
   const [confirmAbandon, setConfirmAbandon] = useState(false)
+  const [showThreats, setShowThreats] = useState(false)
   const { state, selection, log, lastMove, hits, plies } = game.model
   const ended = state.status !== 'ongoing'
   const selected = selection.kind === 'none' ? undefined : findPiece(state, selection.pieceId)
   const bonusPiece = game.bonusPieceId ? findPiece(state, game.bonusPieceId) : undefined
   const wave = nextReinforcements(state)
+  const roundsLeft = roundsBeforeTimeUp(state.goal, state.round)
+  const urgent = !ended && roundsLeft !== null && roundsLeft <= TIME_WARNING_ROUNDS
+  const allThreats = useMemo(() => (showThreats ? enemyThreats(state) : []), [showThreats, state])
+  const highlights: Highlights = showThreats
+    ? { ...game.highlights, threats: [...game.highlights.threats, ...allThreats] }
+    : game.highlights
 
   let hint = ''
   if (!ended && !game.thinking) {
     if (bonusPiece) hint = t('game.momentum', { piece: t(`pieces.${bonusPiece.type}`) })
     else if (game.mustPass) hint = t('game.noMoves')
     else if (selection.kind === 'landing') hint = t('game.chooseLanding')
+    else if (selection.kind === 'inspect') hint = t('game.inspectHint')
     else if (selection.kind === 'piece') hint = t('game.chooseTarget')
     else hint = t('game.selectPiece')
   }
@@ -79,7 +88,7 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
           </p>
           <h1>{t(`levels.${levelId}.name`)}</h1>
         </div>
-        <p className="game-round">{roundLabel(state.goal, state.round, t)}</p>
+        <p className={urgent ? 'game-round game-round--urgent' : 'game-round'}>{roundLabel(state.goal, state.round, t)}</p>
       </header>
 
       <p className="game-goal">{goalLabel(state.goal, t)}</p>
@@ -89,7 +98,7 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
           <Board
             state={state}
             selectedId={selected?.id ?? null}
-            highlights={game.highlights}
+            highlights={highlights}
             lastMove={lastMove}
             hits={hits}
             hitKey={plies}
@@ -108,8 +117,21 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
             </p>
             {hint && <p className="turn-hint">{hint}</p>}
             {!ended && enemiesCornered(state) && <p className="turn-alert">{t('game.cornered')}</p>}
+            {urgent && roundsLeft !== null && (
+              <p className="turn-alert">{t('game.timeWarning', { count: roundsLeft })}</p>
+            )}
             {!ended && wave && (
               <p className="turn-alert">{t('game.reinforcements', { round: wave.round, count: wave.pieces.length })}</p>
+            )}
+            {!ended && (
+              <button
+                type="button"
+                className="button-secondary button-toggle"
+                aria-pressed={showThreats}
+                onClick={() => setShowThreats((value) => !value)}
+              >
+                {t('game.threats')}
+              </button>
             )}
             {(game.mustPass || bonusPiece) && (
               <button type="button" className="button-primary" onClick={game.pass}>
@@ -154,6 +176,26 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
                   </span>
                 </li>
               ))}
+              <li>
+                <svg viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
+                  <TerrainTile pos={{ x: 0, y: 0 }} terrain="floor" />
+                  <ThreatMark pos={{ x: 0, y: 0 }} />
+                </svg>
+                <span>
+                  <strong>{t('game.threatLegend')}</strong> — {t('game.threatRule')}
+                </span>
+              </li>
+              {state.goal.kind === 'intercept' && (
+                <li>
+                  <svg viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
+                    <TerrainTile pos={{ x: 0, y: 0 }} terrain="floor" />
+                    <ExitMark pos={{ x: 0, y: 0 }} />
+                  </svg>
+                  <span>
+                    <strong>{t('game.exitLegend')}</strong> — {t('game.exitRule')}
+                  </span>
+                </li>
+              )}
               {hasPromotionPawn(state) && (
                 <li>
                   <svg viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
@@ -281,11 +323,13 @@ function goalLabel(goal: Goal, t: TFunction): string {
       return t('goal.survive', { rounds: goal.rounds })
     case 'capture':
       return goal.maxRounds ? t('goal.captureLimited', { rounds: goal.maxRounds }) : t('goal.capture')
+    case 'intercept':
+      return t('goal.intercept', { rounds: goal.rounds })
   }
 }
 
 function roundLabel(goal: Goal, round: number, t: TFunction): string {
-  const limit = goal.kind === 'survive' ? goal.rounds : goal.maxRounds
+  const limit = roundLimit(goal)
   return limit
     ? t('game.roundOf', { round: Math.min(round, limit), total: limit })
     : t('game.round', { round })
