@@ -1014,3 +1014,36 @@ button.army-item.is-selected {
   stroke-linejoin: round;
   opacity: 0.55;
 }
+
+/* Aperçu du niveau suivant (écran de récompense) */
+.level-preview {
+  margin: 12px 0 16px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.level-preview h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.level-preview-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.level-preview-board {
+  width: 120px;
+  flex: none;
+  border-radius: 6px;
+}
+
+.level-preview-facts {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}

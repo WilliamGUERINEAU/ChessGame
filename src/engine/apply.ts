@@ -218,21 +218,24 @@ class TurnBuilder {
     return targetHp
   }
 
-  /** Balayage : chaque ennemi voisin de la cible prend la moitié des dégâts (arrondie au supérieur). */
+  /** Balayage : chaque ennemi voisin de la cible prend les mêmes dégâts qu'elle. */
   private sweep(attackerId: string, target: Piece): void {
     const attacker = this.get(attackerId)
-    const amount = Math.ceil(attackDamage(attacker) / 2)
+    const amount = attackDamage(attacker)
     for (const v of ALL_DIRECTIONS) {
       const neighbour = this.at(add(target.pos, v))
       if (neighbour && neighbour.side !== attacker.side) this.strike('sweep', this.get(attackerId), neighbour, amount)
     }
   }
 
-  /** Repousser : la cible recule d'une case ; si la case est bloquée, elle prend 1 dégât. */
+  /**
+   * Repousser : la cible recule d'une case ; si la case est bloquée, elle prend 1 dégât.
+   * Une pièce avec Patins tient sur ses appuis : elle n'est pas repoussée.
+   */
   private knockback(attackerId: string, targetId: string, direction: Vec): void {
     const target = this.find(targetId)
     const attacker = this.find(attackerId)
-    if (!target || !attacker) return
+    if (!target || !attacker || hasPower(target, 'skates')) return
     const to = add(target.pos, direction)
     if (isStandable(this.state.board, to) && !this.at(to)) {
       this.relocate(target, to, 'push')

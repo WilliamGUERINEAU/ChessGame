@@ -10,11 +10,14 @@ const PREVIEW_CELLS: ReadonlyArray<readonly [number, number]> = [
 ]
 
 export interface HomeProps {
+  /** Niveau du run sauvegardé (à partir de 1), ou `null` s'il n'y en a pas. */
+  readonly savedLevel: number | null
+  readonly onContinue: () => void
   readonly onNewRun: () => void
   readonly onPractice: () => void
 }
 
-export function Home({ onNewRun, onPractice }: HomeProps) {
+export function Home({ savedLevel, onContinue, onNewRun, onPractice }: HomeProps) {
   const { t, i18n } = useTranslation()
 
   return (
@@ -35,7 +38,12 @@ export function Home({ onNewRun, onPractice }: HomeProps) {
       <p className="tagline">{t('app.tagline')}</p>
 
       <nav className="menu">
-        <button type="button" className="button-primary" onClick={onNewRun}>
+        {savedLevel !== null && (
+          <button type="button" className="button-primary" onClick={onContinue}>
+            {t('menu.continue', { number: savedLevel })}
+          </button>
+        )}
+        <button type="button" className={savedLevel !== null ? 'button-secondary' : 'button-primary'} onClick={onNewRun}>
           {t('menu.newRun')}
         </button>
         <button type="button" className="button-secondary" onClick={onPractice}>

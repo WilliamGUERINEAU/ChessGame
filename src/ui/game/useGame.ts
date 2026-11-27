@@ -34,6 +34,8 @@ export interface BattleSetup {
   readonly aiBoldness: number
   /** Graine des choix de l'IA (avec le nombre d'actions jouées). */
   readonly seedKey: string
+  /** Reprise d'un combat sauvegardé (sinon le niveau commence). */
+  readonly resume?: { readonly state: GameState; readonly plies: number }
 }
 
 export interface GameModel {
@@ -54,12 +56,12 @@ type Message =
 
 function initialModel(setup: BattleSetup): GameModel {
   return {
-    state: createLevel(setup.definition),
+    state: setup.resume?.state ?? createLevel(setup.definition),
     selection: NO_SELECTION,
     log: [],
     lastMove: null,
     hits: [],
-    plies: 0,
+    plies: setup.resume?.plies ?? 0,
   }
 }
 

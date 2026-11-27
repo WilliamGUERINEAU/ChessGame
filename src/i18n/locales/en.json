@@ -7,7 +7,8 @@
     "newRun": "New run",
     "practice": "Practice",
     "back": "Back",
-    "demoNotice": "A run is 5 levels in a row: you start with 2 pieces and earn a reward after each win. Practice lets you replay each level with a fixed army."
+    "demoNotice": "A run is 5 levels in a row: you start with 2 pieces and earn a reward after each win. Practice lets you replay each level with a fixed army.",
+    "continue": "Continue the run (level {{number}})"
   },
   "settings": {
     "language": "Language"
@@ -202,7 +203,7 @@
     },
     "skates": {
       "name": "Skates",
-      "description": "Does not slide on ice."
+      "description": "Does not slide on ice and cannot be knocked back."
     },
     "reach": {
       "name": "Reach",
@@ -230,7 +231,7 @@
     },
     "sweep": {
       "name": "Sweep",
-      "description": "Its attacks also hit enemies around the target (half damage)."
+      "description": "Its attacks also hit the enemies around the target, for the same damage."
     },
     "knockback": {
       "name": "Knockback",
@@ -274,6 +275,13 @@
     "newRun": "New run",
     "menu": "Menu",
     "promotionHint": "The purple edge marks your pawns’ promotion line.",
-    "reinforcementsHint": "Enemy reinforcements will arrive on the red dashed squares."
+    "reinforcementsHint": "Enemy reinforcements will arrive on the red dashed squares.",
+    "nextLevel": "Next level",
+    "previewEnemies_one": "{{count}} enemy at the start",
+    "previewEnemies_other": "{{count}} enemies at the start",
+    "previewReinforcements_one": "+ {{count}} reinforcement on the way",
+    "previewReinforcements_other": "+ {{count}} reinforcements on the way",
+    "previewTerrains": "Terrain: {{terrains}}",
+    "previewNoTerrain": "Open ground"
   }
 }

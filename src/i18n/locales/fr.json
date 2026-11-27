@@ -7,7 +7,8 @@
     "newRun": "Nouvelle partie",
     "practice": "Entraînement",
     "back": "Retour",
-    "demoNotice": "Un run, ce sont 5 niveaux d’affilée : vous partez avec 2 pièces et gagnez une récompense après chaque victoire. L’entraînement permet de rejouer chaque niveau avec une armée fixe."
+    "demoNotice": "Un run, ce sont 5 niveaux d’affilée : vous partez avec 2 pièces et gagnez une récompense après chaque victoire. L’entraînement permet de rejouer chaque niveau avec une armée fixe.",
+    "continue": "Continuer le run (niveau {{number}})"
   },
   "settings": {
     "language": "Langue"
@@ -202,7 +203,7 @@
     },
     "skates": {
       "name": "Patins",
-      "description": "Ne glisse pas sur la glace."
+      "description": "Ne glisse pas sur la glace et ne peut pas être repoussé."
     },
     "reach": {
       "name": "Allonge",
@@ -230,7 +231,7 @@
     },
     "sweep": {
       "name": "Balayage",
-      "description": "Ses attaques touchent aussi les ennemis autour de la cible (moitié des dégâts)."
+      "description": "Ses attaques touchent aussi les ennemis autour de la cible, avec les mêmes dégâts."
     },
     "knockback": {
       "name": "Repousser",
@@ -274,6 +275,13 @@
     "newRun": "Nouveau run",
     "menu": "Menu",
     "promotionHint": "Le liseré violet marque la ligne de promotion de vos Pions.",
-    "reinforcementsHint": "Des renforts ennemis arriveront sur les cases en pointillés rouges."
+    "reinforcementsHint": "Des renforts ennemis arriveront sur les cases en pointillés rouges.",
+    "nextLevel": "Prochain niveau",
+    "previewEnemies_one": "{{count}} ennemi au départ",
+    "previewEnemies_other": "{{count}} ennemis au départ",
+    "previewReinforcements_one": "+ {{count}} renfort en cours de route",
+    "previewReinforcements_other": "+ {{count}} renforts en cours de route",
+    "previewTerrains": "Terrains : {{terrains}}",
+    "previewNoTerrain": "Terrain dégagé"
   }
 }

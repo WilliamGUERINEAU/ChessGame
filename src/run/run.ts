@@ -66,7 +66,8 @@ const POWER_WEIGHTS: Readonly<Record<PowerId, number>> = {
   shield: 2,
   riposte: 2,
   forester: 2,
-  skates: 2,
+  // Patins ne sert que sur la glace : proposé plus rarement.
+  skates: 1,
   reach: 2,
   piercing: 2,
   promotion: 2,

@@ -285,7 +285,7 @@ describe('Élan', () => {
 })
 
 describe('Balayage', () => {
-  it('les ennemis voisins de la cible prennent la moitié des dégâts (arrondie au supérieur)', () => {
+  it('les ennemis voisins de la cible prennent les mêmes dégâts', () => {
     const state = testLevel({
       terrain: ['....', '....', '....'],
       units: ['Q.r.', '..rP', '...k'],
@@ -294,7 +294,8 @@ describe('Balayage', () => {
     const queen = idAt(state, 0, 0)
     const neighbour = idAt(state, 2, 1)
     const { state: after, events } = applyAction(state, attack(queen, 2, 0))
-    expect(events).toContainEqual({ type: 'sweep', pieceId: queen, targetId: neighbour, damage: 2, targetHp: PIECES.rook.hp - 2 })
+    expect(events).toContainEqual({ type: 'sweep', pieceId: queen, targetId: neighbour, damage: 3, targetHp: 0 })
+    expect(findPiece(after, neighbour)).toBeUndefined()
     // Ni l'allié voisin, ni l'ennemi trop loin ne sont touchés.
     expect(findPiece(after, idAt(state, 3, 1))?.hp).toBe(PIECES.pawn.hp)
     expect(findPiece(after, idAt(state, 3, 2))?.hp).toBe(PIECES.king.hp)
@@ -368,5 +369,18 @@ describe('IA et Élan', () => {
       stats: { '0,4': powers('momentum') },
     })
     expect(chooseAction(state, { depth: 2 })).toMatchObject({ kind: 'attack', target: { x: 0, y: 2 } })
+  })
+})
+
+describe('Patins contre Repousser', () => {
+  it('une pièce avec Patins n’est pas repoussée', () => {
+    const state = testLevel({
+      terrain: ['.....'],
+      units: ['R.r..'],
+      stats: { '0,0': powers('knockback'), '2,0': { hp: 5, powers: ['skates'] } },
+    })
+    const { state: after, events } = applyAction(state, attack(idAt(state, 0, 0), 2, 0))
+    expect(events.some((event) => event.type === 'push' || event.type === 'crush')).toBe(false)
+    expect(findPiece(after, idAt(state, 2, 0))?.pos).toEqual({ x: 2, y: 0 })
   })
 })

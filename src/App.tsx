@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DEMO_LEVELS } from './content/levels'
 import type { ClassId } from './run/classes'
+import { clearRun, loadRun, type SavedRun } from './run/save'
 import { ClassSelect } from './ui/run/ClassSelect'
 import { RunFlow } from './ui/run/RunFlow'
 import { GameScreen } from './ui/screens/GameScreen'
@@ -10,7 +11,7 @@ import { LevelSelect } from './ui/screens/LevelSelect'
 type Screen =
   | { readonly name: 'home' }
   | { readonly name: 'classSelect' }
-  | { readonly name: 'run'; readonly classId: ClassId; readonly seed: number }
+  | { readonly name: 'run'; readonly classId: ClassId; readonly seed: number; readonly resume?: SavedRun }
   | { readonly name: 'practice' }
   | { readonly name: 'practiceGame'; readonly index: number; readonly attempt: number }
 
@@ -27,13 +28,23 @@ export default function App() {
   const home = () => setScreen({ name: 'home' })
 
   switch (screen.name) {
-    case 'home':
+    case 'home': {
+      const saved = loadRun(DEMO_LEVELS.length)
       return (
         <Home
-          onNewRun={() => setScreen({ name: 'classSelect' })}
+          savedLevel={saved ? saved.run.levelIndex + 1 : null}
+          onContinue={() => {
+            if (saved) setScreen({ name: 'run', classId: saved.run.classId, seed: saved.run.seed, resume: saved })
+          }}
+          onNewRun={() => {
+            // Un nouveau run remplace le run sauvegardé.
+            clearRun()
+            setScreen({ name: 'classSelect' })
+          }}
           onPractice={() => setScreen({ name: 'practice' })}
         />
       )
+    }
     case 'classSelect':
       return (
         <ClassSelect
@@ -48,6 +59,7 @@ export default function App() {
           key={screen.seed}
           classId={screen.classId}
           seed={screen.seed}
+          resume={screen.resume}
           onExit={home}
           onNewRun={() => setScreen({ name: 'classSelect' })}
         />

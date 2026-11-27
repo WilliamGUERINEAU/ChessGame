@@ -3,16 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { statsFor } from '../../engine'
 import { eligibleTargets, MAX_ARMY, sameReward, type RewardOption, type RunState } from '../../run/run'
 import { PieceGlyph } from '../board/PieceGlyph'
+import type { LevelContent } from '../../content/levels'
 import { ArmyList } from './ArmyList'
+import { LevelPreview } from './LevelPreview'
 
 export interface RewardScreenProps {
   readonly run: RunState
+  /** Niveau qui suit la récompense, montré pour choisir en connaissance de cause. */
+  readonly nextLevel: LevelContent
   readonly onConfirm: (option: RewardOption, targetId?: string) => void
   readonly onAbandon: () => void
 }
 
 /** Choix d'une récompense parmi trois, puis (pour un pouvoir) de la pièce qui le reçoit. */
-export function RewardScreen({ run, onConfirm, onAbandon }: RewardScreenProps) {
+export function RewardScreen({ run, nextLevel, onConfirm, onAbandon }: RewardScreenProps) {
   const { t } = useTranslation()
   const [chosen, setChosen] = useState<RewardOption | null>(null)
   const [targetId, setTargetId] = useState<string | null>(null)
@@ -36,6 +40,8 @@ export function RewardScreen({ run, onConfirm, onAbandon }: RewardScreenProps) {
         <h1>{t('run.rewardTitle')}</h1>
       </header>
       <p className="muted">{t('run.rewardSubtitle', { number: run.levelsCleared, total: run.levelCount })}</p>
+
+      <LevelPreview level={nextLevel} />
 
       <ul className="reward-list">
         {run.rewardOptions.map((option) => {

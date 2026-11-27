@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { findPiece, type GameState, type Goal, type Piece, type Terrain } from '../../engine'
@@ -29,6 +29,8 @@ export type GameMode =
       /** Appelé quand le joueur quitte l'écran de fin, avec l'état final du combat. */
       readonly onFinished: (state: GameState) => void
       readonly onAbandon: () => void
+      /** Après chaque action : pour sauvegarder le combat en cours. */
+      readonly onProgress?: (state: GameState, plies: number) => void
     }
 
 export interface GameScreenProps {
@@ -44,6 +46,11 @@ const TERRAINS: readonly Terrain[] = ['floor', 'forest', 'water', 'wall', 'ice']
 export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProps) {
   const { t } = useTranslation()
   const game = useGame(setup)
+  const onProgress = mode.kind === 'run' ? mode.onProgress : undefined
+  const { state: progressState, plies: progressPlies } = game.model
+  useEffect(() => {
+    onProgress?.(progressState, progressPlies)
+  }, [onProgress, progressState, progressPlies])
   const [confirmAbandon, setConfirmAbandon] = useState(false)
   const [showThreats, setShowThreats] = useState(false)
   const { state, selection, log, lastMove, hits, plies } = game.model
