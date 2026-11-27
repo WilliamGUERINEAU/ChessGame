@@ -48,6 +48,8 @@ export interface RunState {
   readonly nextPieceNumber: number
   /** Raison de la défaite quand `phase` vaut `lost`. */
   readonly endReason: EndReason | null
+  /** Pouvoirs pas encore débloqués : jamais proposés pendant ce run (absent = aucun). */
+  readonly lockedPowers?: readonly PowerId[]
 }
 
 /** Rareté des pièces proposées en récompense (jamais de Roi). */
@@ -77,7 +79,12 @@ const POWER_WEIGHTS: Readonly<Record<PowerId, number>> = {
   lifesteal: 2,
 }
 
-export function startRun(classId: ClassId, seed: number, levelCount: number): RunState {
+export function startRun(
+  classId: ClassId,
+  seed: number,
+  levelCount: number,
+  lockedPowers: readonly PowerId[] = [],
+): RunState {
   const definition = CLASSES[classId]
   const army: ArmyPiece[] = [
     { id: 'a1', type: definition.hero.type, powers: definition.hero.powers },
@@ -96,6 +103,7 @@ export function startRun(classId: ClassId, seed: number, levelCount: number): Ru
     rewardOptions: [],
     nextPieceNumber: army.length + 1,
     endReason: null,
+    lockedPowers,
   }
 }
 
@@ -122,7 +130,7 @@ export function finishBattle(run: RunState, final: GameState): RunState {
   if (run.levelIndex + 1 >= run.levelCount) return { ...cleared, phase: 'won' }
 
   const rng = createRng(run.rngState)
-  const rewardOptions = drawRewards(army, rng)
+  const rewardOptions = drawRewards(army, rng, run.lockedPowers ?? [])
   return { ...cleared, phase: 'reward', rewardOptions, rngState: rng.state }
 }
 
@@ -175,9 +183,11 @@ export function sameReward(a: RewardOption, b: RewardOption): boolean {
  * Trois récompenses distinctes. Tant que l'armée n'est pas complète et qu'un
  * pouvoir peut servir, au moins une nouvelle pièce et au moins un pouvoir.
  */
-export function drawRewards(army: readonly ArmyPiece[], rng: Rng): RewardOption[] {
+export function drawRewards(army: readonly ArmyPiece[], rng: Rng, locked: readonly PowerId[] = []): RewardOption[] {
   const pieces: RewardOption[] = army.length < MAX_ARMY ? PIECE_WEIGHTS.map(([type]) => ({ kind: 'piece', type })) : []
-  const powers: RewardOption[] = POWER_IDS.filter((power) => eligibleTargets(army, power).length > 0).map(
+  const powers: RewardOption[] = POWER_IDS.filter(
+    (power) => !locked.includes(power) && eligibleTargets(army, power).length > 0,
+  ).map(
     (power) => ({ kind: 'power', power }),
   )
   const weight = (option: RewardOption) =>

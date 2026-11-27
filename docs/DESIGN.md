@@ -14,7 +14,7 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 ## 2. Structure d'un run
 
 - **Carte à embranchements** (à venir) : à chaque étape, le joueur choisit le
-  prochain nœud. Pour l'instant, un run enchaîne les 5 niveaux de démonstration
+  prochain nœud. Pour l'instant, un run enchaîne les 6 niveaux de démonstration
   dans l'ordre.
 - **Types de nœuds** : combat, survie, capture, boss (fin d'acte).
 - **Héros** ✅ : en début de run, le joueur choisit une **classe de départ**. Chaque
@@ -24,10 +24,11 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
   |---|---|---|---|
   | Souverain | Roi (4 PV, 1 ATK) | Riposte | Tour |
   | Chevalière | Cavalier (4 PV, 2 ATK) | Bouclier, Vigueur | Fou |
+  | Éclaireuse (à débloquer) | Fou (4 PV, 2 ATK) | Élan, Vigueur | Cavalier |
 
   On part avec **2 pièces** (héros compris) ; l'armée grandit avec les récompenses.
-- **Ennemis** ✅ : de plus en plus nombreux au fil du run : 2, puis 3, 3, 4 et 4
-  (le dernier niveau compte la cible Gardienne).
+- **Ennemis** ✅ : de plus en plus nombreux au fil du run : 2, puis 3, 3, 3
+  (interception), 4 (+ renforts) et 4 (le dernier niveau compte la cible Gardienne).
 
 - **Armée** ✅ : **6 pièces au maximum**, héros compris.
 - **Défaite** ✅ : **tout niveau perdu met fin au run** (mort du héros, temps
@@ -43,9 +44,17 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
   servir). Rareté des pièces : Pion 35, Cavalier 22, Fou 22, Tour 15, Dame 6
   (jamais de Roi). Seuls les pouvoirs utilisables par au moins une pièce sont
   proposés ; Vigueur et Force un peu plus souvent.
-- **Progression** (à venir) : roguelite par défaut (les runs débloquent des classes,
-  pièces, pouvoirs qui entrent ensuite dans les tirages). **Option pour la
-  désactiver** (mode roguelike pur : rien n'est conservé hors statistiques).
+- **Progression entre runs** ✅ : de la **variété, jamais de la puissance**. Profil
+  sur l'appareil (combats gagnés, plus haut niveau atteint, runs gagnés) :
+  - 3 combats gagnés : **Repousser** et **Vampirisme** entrent dans les récompenses ;
+  - atteindre le niveau 4 : classe **Éclaireuse**.
+  Les pouvoirs verrouillés sont fixés au début du run (tirages reproductibles). Le
+  bilan annonce les déblocages ; l'écran des classes donne la condition.
+  (À venir : option pour désactiver la progression.)
+- **Sauvegarde** ✅ : le run et le combat en cours sont sauvegardés à chaque action
+  (`localStorage`) ; « Continuer le run » sur l'accueil. Un combat terminé est
+  aussi sauvegardé : recharger ne permet pas d'annuler une défaite. Une sauvegarde
+  illisible ou incompatible (nombre de niveaux changé) est ignorée.
 - **Entraînement** ✅ : chaque niveau se rejoue à volonté avec une armée fixe, hors run.
 
 ## 3. Niveaux (mini-problèmes)
@@ -89,6 +98,7 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 | Combat | Capturer **toutes** les pièces adverses. | Limite de tours facultative (défaite « temps écoulé ») : 10 à 16 tours dans la démo. |
 | Survie | Tenir **N tours** avec le héros vivant (5 dans la démo). | Un tour est fini quand l'ennemi a joué. Gagné aussi si plus aucun ennemi ne reste (renforts attendus compris). L'ennemi y est **très agressif** : chaque PV du héros vaut pour lui plus qu'une pièce mineure, et il fonce (agressivité 2). |
 | Capture | Capturer **une pièce cible** précise. | Limite de tours facultative : le joueur dispose alors de N coups (12 pour la Gardienne). |
+| Interception | Empêcher les ennemis d'atteindre une **sortie** pendant N tours. | Perdu dès qu'un ennemi se tient sur une sortie (« Le col » : 2 sorties, 6 tours). Une pièce posée sur la sortie la bloque. |
 | Boss | Vaincre un ennemi à beaucoup de PV (il peut jouer deux fois par tour). | PV personnalisables ✅ ; double action à implémenter. |
 
 ## 4. Règles de jeu
@@ -140,14 +150,14 @@ Gagnés en récompense (ou portés par le héros dès le départ), conservés to
 | Vigueur | +2 PV max | toutes | 3 |
 | Force | +1 ATK | toutes | 3 |
 | Forestier | La forêt n'arrête plus ses glissades (ni le double pas du Pion) | Dame, Tour, Fou, Pion | 1 |
-| Patins | Ne glisse pas sur la glace | toutes sauf Cavalier | 1 |
+| Patins | Ne glisse pas sur la glace et ne peut pas être repoussé (proposé plus rarement) | toutes sauf Cavalier | 1 |
 | Allonge | Roi : se déplace et attaque jusqu'à 3 cases. Pion : deux cases de plus vers l'avant (4 au premier coup) | Roi, Pion | 1 |
 | Bouclier | La première attaque reçue à chaque niveau ne fait aucun dégât (riposte comprise) | toutes | 1 |
 | Riposte | Si la pièce survit à une attaque et peut atteindre l'attaquant là où il a fini (même à distance), elle le frappe aussitôt (sans riposte en retour) | toutes | 1 |
 | Promotion | Un Pion qui atteint la dernière rangée (plus aucune case devant lui dans sa colonne) devient une Dame **pour tout le run** ; ses PV montent d'autant que son maximum. **Tous les Pions naissent avec ce pouvoir** (ennemis, renforts et Pions gagnés en récompense), qui n'est donc plus proposé en récompense | Pion | 1 |
 | Perçage | Ses glissades traversent la première pièce alliée (pas si elle se tient dans une forêt qui l'arrêterait). Si cet allié est juste devant une cible qui survit, l'attaquant reste sur place | Dame, Tour, Fou | 1 |
 | Élan | Après une capture, la pièce **rejoue aussitôt** (elle seule ; « Terminer le tour » pour s'arrêter). Une fois par tour : une capture pendant l'Élan n'en redonne pas | toutes | 1 |
-| Balayage | Chaque attaque inflige aussi la moitié de l'ATK (arrondie au-dessus) aux ennemis voisins de la cible | toutes | 1 |
+| Balayage | Chaque attaque inflige aussi les mêmes dégâts aux ennemis voisins de la cible | toutes | 1 |
 | Repousser | Une cible qui survit recule d'une case dans l'axe de l'attaque (et glisse sur la glace) ; si la case est bloquée, elle est **écrasée** : 1 dégât | toutes | 1 |
 | Vampirisme | Regagne autant de PV que les dégâts infligés (balayage compris), sans dépasser son maximum | toutes | 1 |
 
@@ -191,13 +201,27 @@ poussée (ou écrasement) → riposte → promotion → Élan.
   l'attaque ! »).
 - Une **issue certaine reste départagée par la position** : un ennemi condamné (ex.
   la survie va réussir) continue d'user le héros au lieu de jouer au hasard.
-- **Réglages par niveau** : profondeur (demi-coups anticipés) et **agressivité**
-  (poids de l'approche ; 0,5 par défaut). Trop prudente, l'IA fuit et la fin de
-  partie tourne à la course-poursuite ; trop agressive, elle se sacrifie.
+- **Réglages par niveau** : profondeur (demi-coups anticipés), **agressivité**
+  (poids de l'approche ; 1 par défaut) et **audace** (part de la valeur de ses
+  pièces qu'elle accepte de risquer ; 0,3 par défaut, 0,8 quand elle est acculée).
+  La Gardienne garde une agressivité de 0,5 (à 1, ses gardes la délaissent).
+- **Pas de jeu la montre** ✅ : l'IA ennemie ne compte pas une défaite « temps
+  écoulé » du joueur comme une victoire ; elle cherche à blesser le héros jusqu'au
+  bout. Constat de l'audit : avant, presque toutes les défaites hors survie venaient
+  du temps, héros intact.
+- **Interception** : les ennemis visent la sortie la plus proche (distance de marche).
 - Les égalités sont départagées par le générateur à graine.
 - Difficulté croissante : profondeur 1 au niveau 1, 2 au niveau 2, 3 ensuite.
   Ces réglages ont été choisis d'après des parties IA contre IA ; un test vérifie
   que chaque niveau reste gagnable par un joueur simulé.
+
+### Mesures de l'audit (joueur simulé, 6 parties par niveau et par réglage)
+- Pouvoirs donnés à toutes les pièces des armées d'entraînement, 36 parties
+  (sans pouvoir : 19 victoires) : Élan 30, Allonge 30, Bouclier 29 (héros jamais
+  blessé), Riposte 27, Forestier 23, Vigueur 22, Repousser 22, Vampirisme 22,
+  Perçage 21, Force 20, Patins 19 et Balayage 18 avant renforcement (21 après).
+  Les cumuls extrêmes (Vigueur ×3 : 22, Force ×3 : 26, Élan + Balayage : 24) ne
+  déforment pas le jeu. À confirmer par des parties humaines.
 
 ## 6. Technique
 
@@ -268,10 +292,26 @@ testLevel({
   marquent les cases de promotion : la dernière case praticable de chaque colonne
   (sur un plateau irrégulier, la ligne n'est pas forcément droite). Elle figure
   aussi dans la légende et dans la description des cases.
+- **Annonce des menaces** ✅ (principe d'Into the Breach) : toucher un ennemi montre
+  ce qu'il peut attaquer au prochain coup (cases hachurées) et sa fiche ; le bouton
+  « Menaces ennemies » montre les cases menacées par tous les ennemis.
+- **Aperçu d'attaque** ✅ : une pièce sélectionnée affiche sur chaque cible le
+  résultat prévu (« −2 » ou « K.O. », et « ↩ −1 » si la cible riposte).
+- **Temps** ✅ : à 3 tours de la limite, le compteur passe en rouge et le panneau
+  annonce « Plus que N tours ! ».
+- **Fin de combat** ✅ : la défaite nomme le coup fatal (ou l'ennemi évadé) et
+  donne une astuce liée à sa cause.
+- **Récompense** ✅ : aperçu du niveau suivant (plateau, objectif, ennemis,
+  renforts, terrains) pour choisir en connaissance de cause.
 - **Panneau** : tour en cours, consigne, fiche de la pièce choisie (avec ses
   pouvoirs), journal (attaques, ripostes, boucliers, captures, glissades,
   promotions), légende des terrains.
-- Le dernier déplacement est surligné ; une pièce touchée clignote en rouge.
+- Le dernier déplacement est surligné ; une pièce touchée clignote en rouge ; une
+  pièce capturée s'efface en fondu ; dégâts et soins s'affichent en nombres
+  flottants ; **sons synthétisés** (Web Audio, aucun fichier) avec bouton muet
+  mémorisé. Sans animations (mouvements réduits), ces effets sont masqués.
+- **Contraste** ✅ vérifié (WCAG) en clair et en sombre : texte ≥ 4,5:1, marques du
+  plateau ≥ 3:1 (le plateau reste clair en thème sombre : marques foncées).
 - Accessible au clavier (cases actives focalisables, Entrée/Espace) et aux
   lecteurs d'écran (chaque case est décrite). Mouvements réduits respectés.
 
@@ -282,13 +322,13 @@ testLevel({
    mort du héros, blocage.
 3. ✅ IA (minimax alpha-bêta dans un Web Worker, réglable par niveau).
 4. ✅ Interface SVG responsive, FR/EN, clair/sombre.
-5. ✅ Run de 5 niveaux avec déploiement, récompenses (9 pouvoirs, nouvelles
-   pièces) et 2 classes de héros.
-6. Sauvegarde locale (IndexedDB).
+5. ✅ Run de 6 niveaux avec déploiement, récompenses (13 pouvoirs, nouvelles
+   pièces) et 3 classes de héros (dont une à débloquer).
+6. ✅ Sauvegarde locale du run (`localStorage`) et profil de progression.
 
 ### Ensuite
 - Carte à embranchements et types de nœuds.
-- Déblocages roguelite (désactivables).
+- Option pour désactiver les déblocages (mode roguelike pur).
 - Équilibrage du run : dans les parties simulées, beaucoup de runs échouent au
   niveau 5 (« Le gardien », temps écoulé) ; les blocages restants viennent surtout
   des limites du joueur simulé (il défend au lieu d'attaquer). À confirmer par des

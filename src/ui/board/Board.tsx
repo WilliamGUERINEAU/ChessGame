@@ -13,6 +13,7 @@ import {
   type Pos,
 } from '../../engine'
 import type { AttackPreview } from '../../engine'
+import type { ActionEffects } from '../game/effects'
 import type { Highlights } from '../game/interaction'
 import { PieceGlyph } from './PieceGlyph'
 import { hasPromotionPawn, nextReinforcements } from './promotion'
@@ -27,6 +28,8 @@ export interface BoardProps {
   readonly hits: readonly string[]
   /** Change à chaque action : relance l'effet de coup reçu. */
   readonly hitKey: number
+  /** Pièces capturées à l'instant et nombres flottants (dégâts, soins). */
+  readonly effects?: ActionEffects
   /** Le joueur peut agir (c'est son tour). */
   readonly interactive: boolean
   readonly onCellClick: (pos: Pos) => void
@@ -46,6 +49,7 @@ export function Board({
   interactive,
   onCellClick,
   zone = [],
+  effects,
 }: BoardProps) {
   const { t } = useTranslation()
   const { board } = state
@@ -211,6 +215,31 @@ export function Board({
         ))}
       </g>
 
+      <g className="effects" aria-hidden="true" key={`effects-${hitKey}`}>
+        {effects?.ghosts.map(({ piece }) => (
+          <g
+            key={`ghost-${piece.id}`}
+            className={`piece-ghost piece--${piece.side}`}
+            transform={`translate(${piece.pos.x * CELL} ${piece.pos.y * CELL})`}
+          >
+            <g transform="translate(16 5) scale(0.68)">
+              <PieceGlyph type={piece.type} />
+            </g>
+          </g>
+        ))}
+        {effects?.floats.map((float, index) => (
+          <text
+            key={`float-${index}`}
+            className={`float-text float-text--${float.kind}`}
+            x={float.pos.x * CELL + CELL / 2}
+            y={float.pos.y * CELL + 30 - (index % 2) * 14}
+            textAnchor="middle"
+          >
+            {float.text}
+          </text>
+        ))}
+      </g>
+
       <g className="previews" aria-hidden="true">
         {highlights.previews.map(({ pos, preview }) => (
           <AttackPreviewMark key={`preview-${posKey(pos)}`} pos={pos} preview={preview} />
@@ -222,7 +251,8 @@ export function Board({
           const key = posKey(p)
           const piece = pieceAt(state, p)
           const role = roles.get(key)
-          const actionable = interactive && (role !== undefined || piece?.side === 'player')
+          // Ses pièces se sélectionnent, celles de l'ennemi s'observent.
+          const actionable = interactive && (role !== undefined || piece !== undefined)
           return (
             <rect
               key={key}

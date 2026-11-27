@@ -10,6 +10,7 @@ import {
   type Pos,
 } from '../../engine'
 import { getAiClient } from '../aiClient'
+import { effectsFor, type ActionEffects } from './effects'
 import {
   highlightsFor,
   interpretClick,
@@ -24,6 +25,7 @@ import {
 /** Délai minimal avant le coup ennemi, pour que le joueur voie son propre coup. */
 const ENEMY_MIN_DELAY_MS = 250
 const LOG_SIZE = 30
+const NO_EFFECTS: ActionEffects = { ghosts: [], floats: [], sound: null, fatal: null }
 const STRIKE_EVENTS: ReadonlySet<string> = new Set(['attack', 'riposte', 'sweep', 'crush'])
 
 /** Tout ce qu'il faut pour jouer un combat, en entraînement comme dans un run. */
@@ -48,6 +50,8 @@ export interface GameModel {
   readonly hits: readonly string[]
   /** Nombre d'actions jouées depuis le début du niveau. */
   readonly plies: number
+  /** Effets de la dernière action (capture animée, nombres flottants, son). */
+  readonly effects: ActionEffects
 }
 
 type Message =
@@ -62,6 +66,7 @@ function initialModel(setup: BattleSetup): GameModel {
     lastMove: null,
     hits: [],
     plies: setup.resume?.plies ?? 0,
+    effects: NO_EFFECTS,
   }
 }
 
@@ -85,6 +90,7 @@ function reducer(model: GameModel, message: Message): GameModel {
         lastMove: lastMoveOf(events),
         hits: events.flatMap((event) => (STRIKE_EVENTS.has(event.type) && 'targetId' in event ? [event.targetId] : [])),
         plies: model.plies + 1,
+        effects: effectsFor(model.state, state, events),
       }
     }
   }

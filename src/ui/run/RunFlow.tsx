@@ -3,6 +3,7 @@ import { DEMO_LEVELS } from '../../content/levels'
 import type { ClassId } from '../../run/classes'
 import { autoDeploy, battleDefinition, playerForward, type Placement } from '../../run/deploy'
 import { applyReward, beginBattle, finishBattle, startRun, type RunState } from '../../run/run'
+import { loadProfile, lockedPowers, newlyUnlocked, recordCombatWon, saveProfile } from '../../run/profile'
 import { clearRun, saveRun, type SavedRun } from '../../run/save'
 import type { GameState } from '../../engine'
 import type { BattleSetup } from '../game/useGame'
@@ -30,7 +31,11 @@ function defaultPlacement(run: RunState): Placement {
 
 /** Déroulement d'un run : déploiement → combat → récompense → … → bilan. */
 export function RunFlow({ classId, seed, onExit, onNewRun, resume }: RunFlowProps) {
-  const [run, setRun] = useState(() => resume?.run ?? startRun(classId, seed, LEVELS.length))
+  const [profileAtStart] = useState(loadProfile)
+  const [profile, setProfile] = useState(profileAtStart)
+  const [run, setRun] = useState(
+    () => resume?.run ?? startRun(classId, seed, LEVELS.length, lockedPowers(profileAtStart)),
+  )
   const [placement, setPlacement] = useState(() => resume?.placement ?? defaultPlacement(run))
   const [battle, setBattle] = useState<SavedRun['battle']>(() => resume?.battle ?? null)
   const [confirmAbandon, setConfirmAbandon] = useState(false)
@@ -107,7 +112,13 @@ export function RunFlow({ classId, seed, onExit, onNewRun, resume }: RunFlowProp
             isLastLevel: run.levelIndex + 1 >= run.levelCount,
             onFinished: (state) => {
               setBattle(null)
-              setRun(finishBattle(run, state))
+              const next = finishBattle(run, state)
+              if (state.status === 'won') {
+                const updated = recordCombatWon(profile, run.levelIndex + 1, next.phase === 'won')
+                saveProfile(updated)
+                setProfile(updated)
+              }
+              setRun(next)
             },
             onAbandon: abandonRun,
             onProgress,
@@ -132,6 +143,8 @@ export function RunFlow({ classId, seed, onExit, onNewRun, resume }: RunFlowProp
       )
     case 'won':
     case 'lost':
-      return <RunSummary run={run} onNewRun={onNewRun} onMenu={onExit} />
+      return (
+        <RunSummary run={run} unlocks={newlyUnlocked(profileAtStart, profile)} onNewRun={onNewRun} onMenu={onExit} />
+      )
   }
 }

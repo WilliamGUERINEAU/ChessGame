@@ -90,7 +90,9 @@
     "timeWarning_one": "Last round to succeed!",
     "timeWarning_other": "Only {{count}} rounds left!",
     "exitLegend": "Exit",
-    "exitRule": "if an enemy reaches it, you lose. Block its path or stand on it."
+    "exitRule": "if an enemy reaches it, you lose. Block its path or stand on it.",
+    "soundOn": "Turn sound on",
+    "soundOff": "Mute sound"
   },
   "end": {
     "won": "Victory!",
@@ -103,6 +105,17 @@
       "timeUp": "Time is up.",
       "stalemate": "Nobody can move anymore.",
       "escaped": "An enemy reached an exit."
+    },
+    "fatalBy": "Fatal blow: {{piece}}.",
+    "escapedBy": "Escaped: {{piece}}.",
+    "tip": {
+      "heroDied": "Tip: tap an enemy or turn on “Enemy threats” to see the dangerous squares.",
+      "timeUp": "Tip: watch the round counter, it turns red 3 rounds before the end.",
+      "escaped": "Tip: a piece standing on an exit blocks it.",
+      "stalemate": "Tip: keep at least one piece free to move.",
+      "allEliminated": "",
+      "survived": "",
+      "targetCaptured": ""
     }
   },
   "pieces": {
@@ -186,6 +199,10 @@
     "knightess": {
       "name": "Knight-errant",
       "description": "A mobile, sturdy knight protected by her shield, backed by a bishop."
+    },
+    "scout": {
+      "name": "Scout",
+      "description": "A swift bishop chaining captures with Momentum, backed by a knight."
     }
   },
   "powers": {
@@ -283,5 +300,13 @@
     "previewReinforcements_other": "+ {{count}} reinforcements on the way",
     "previewTerrains": "Terrain: {{terrains}}",
     "previewNoTerrain": "Open ground"
+  },
+  "unlock": {
+    "title": "Unlocked!",
+    "class": "New class: {{name}}",
+    "powers": "New reward powers: {{names}}",
+    "condition": {
+      "scout": "Reach level 4 of a run to unlock it."
+    }
   }
 }

@@ -12,6 +12,7 @@ import { enemyThreats, type Highlights, type LogEntry, type PieceLabel } from '.
 import { roundLimit, roundsBeforeTimeUp, TIME_WARNING_ROUNDS } from '../game/time'
 import { useGame, type BattleSetup } from '../game/useGame'
 import { powerNames } from '../powers'
+import { isMuted, playCue, setMuted } from '../sound'
 
 /** Entraînement (armée fixe, on peut recommencer) ou combat d'un run. */
 export type GameMode =
@@ -46,6 +47,11 @@ const TERRAINS: readonly Terrain[] = ['floor', 'forest', 'water', 'wall', 'ice']
 export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProps) {
   const { t } = useTranslation()
   const game = useGame(setup)
+  const [muted, setMutedState] = useState(isMuted)
+  const { effects } = game.model
+  useEffect(() => {
+    playCue(effects.sound)
+  }, [effects])
   const onProgress = mode.kind === 'run' ? mode.onProgress : undefined
   const { state: progressState, plies: progressPlies } = game.model
   useEffect(() => {
@@ -95,7 +101,21 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
           </p>
           <h1>{t(`levels.${levelId}.name`)}</h1>
         </div>
-        <p className={urgent ? 'game-round game-round--urgent' : 'game-round'}>{roundLabel(state.goal, state.round, t)}</p>
+        <div className="game-header-side">
+          <p className={urgent ? 'game-round game-round--urgent' : 'game-round'}>{roundLabel(state.goal, state.round, t)}</p>
+          <button
+            type="button"
+            className="button-ghost sound-toggle"
+            aria-pressed={!muted}
+            aria-label={muted ? t('game.soundOn') : t('game.soundOff')}
+            onClick={() => {
+              setMuted(!muted)
+              setMutedState(!muted)
+            }}
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
+        </div>
       </header>
 
       <p className="game-goal">{goalLabel(state.goal, t)}</p>
@@ -109,6 +129,7 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
             lastMove={lastMove}
             hits={hits}
             hitKey={plies}
+            effects={game.model.effects}
             interactive={!ended && !game.thinking}
             onCellClick={game.clickCell}
           />
@@ -254,6 +275,14 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
           actions={endActions(mode, state, t)}
         >
           <p>{t(`end.reason.${state.endReason}`)}</p>
+          {state.status === 'lost' && game.model.effects.fatal && (
+            <p>
+              {t(state.endReason === 'escaped' ? 'end.escapedBy' : 'end.fatalBy', {
+                piece: `${t(`pieces.${game.model.effects.fatal.type}`)} (${t(`sides.${game.model.effects.fatal.side}`)})`,
+              })}
+            </p>
+          )}
+          {state.status === 'lost' && <p className="muted">{t(`end.tip.${state.endReason}`)}</p>}
           {mode.kind === 'practice' && state.status === 'won' && !mode.hasNext && <p>{t('game.demoComplete')}</p>}
           {mode.kind === 'run' && state.status === 'lost' && <p>{t('run.over')}</p>}
         </Dialog>

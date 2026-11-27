@@ -8,7 +8,7 @@
   --accent: #b84f34;
   --accent-contrast: #ffffff;
   --focus: #2f6fd6;
-  --success: #2f8a4c;
+  --success: #2a7d45;
   --danger: #c23b2f;
 
   /* Plateau */
@@ -46,6 +46,8 @@
   --mark-selected: #f0b429;
   --mark-last: rgba(240, 180, 41, 0.3);
   --promotion: #7c3aed;
+  /* Marques rouges dessinées sur le plateau (renforts, sorties, promotion ennemie). */
+  --mark-danger: #c23b2f;
 
   color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -80,7 +82,10 @@
     --mark-move: rgba(20, 24, 33, 0.45);
     --mark-landing-fill: rgba(122, 167, 255, 0.28);
     --mark-landing: #1f5bc4;
-    --promotion: #a78bfa;
+    /* Le plateau reste clair en thème sombre : marques foncées pour garder le contraste. */
+    --promotion: #5b21b6;
+    --mark-danger: #9b1c14;
+    --mark-attack: #9b1c14;
 
     color-scheme: dark;
   }

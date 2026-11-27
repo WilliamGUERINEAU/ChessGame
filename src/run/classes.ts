@@ -1,6 +1,6 @@
 import type { PieceType, PowerId } from '../engine'
 
-export type ClassId = 'sovereign' | 'knightess'
+export type ClassId = 'sovereign' | 'knightess' | 'scout'
 
 /** Une classe de départ : le héros (type et pouvoirs) et le reste de l'armée. */
 export interface ClassDefinition {
@@ -23,6 +23,12 @@ export const CLASSES: Readonly<Record<ClassId, ClassDefinition>> = {
     hero: { type: 'knight', powers: ['shield', 'vigor'] },
     army: ['bishop'],
   },
+  /** Éclaireuse (à débloquer) : Fou (4 PV grâce à Vigueur) avec Élan, et un Cavalier. */
+  scout: {
+    id: 'scout',
+    hero: { type: 'bishop', powers: ['momentum', 'vigor'] },
+    army: ['knight'],
+  },
 }
 
-export const CLASS_IDS: readonly ClassId[] = ['sovereign', 'knightess']
+export const CLASS_IDS: readonly ClassId[] = ['sovereign', 'knightess', 'scout']

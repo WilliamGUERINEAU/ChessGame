@@ -90,7 +90,9 @@
     "timeWarning_one": "Dernier tour pour réussir !",
     "timeWarning_other": "Plus que {{count}} tours !",
     "exitLegend": "Sortie",
-    "exitRule": "si un ennemi l’atteint, vous perdez. Barrez-lui la route ou occupez-la."
+    "exitRule": "si un ennemi l’atteint, vous perdez. Barrez-lui la route ou occupez-la.",
+    "soundOn": "Activer le son",
+    "soundOff": "Couper le son"
   },
   "end": {
     "won": "Victoire !",
@@ -103,6 +105,17 @@
       "timeUp": "Le temps est écoulé.",
       "stalemate": "Plus personne ne peut jouer.",
       "escaped": "Un ennemi a atteint une sortie."
+    },
+    "fatalBy": "Coup fatal : {{piece}}.",
+    "escapedBy": "Évadé : {{piece}}.",
+    "tip": {
+      "heroDied": "Astuce : touchez un ennemi ou activez « Menaces ennemies » pour voir les cases dangereuses.",
+      "timeUp": "Astuce : surveillez le compteur de tours, il passe en rouge à 3 tours de la fin.",
+      "escaped": "Astuce : une pièce posée sur une sortie la bloque.",
+      "stalemate": "Astuce : gardez au moins une pièce libre de ses mouvements.",
+      "allEliminated": "",
+      "survived": "",
+      "targetCaptured": ""
     }
   },
   "pieces": {
@@ -186,6 +199,10 @@
     "knightess": {
       "name": "Chevalière",
       "description": "Une Cavalière mobile et solide, protégée par son bouclier, appuyée par un Fou."
+    },
+    "scout": {
+      "name": "Éclaireuse",
+      "description": "Un Fou véloce qui enchaîne les prises grâce à l’Élan, épaulé par un Cavalier."
     }
   },
   "powers": {
@@ -283,5 +300,13 @@
     "previewReinforcements_other": "+ {{count}} renforts en cours de route",
     "previewTerrains": "Terrains : {{terrains}}",
     "previewNoTerrain": "Terrain dégagé"
+  },
+  "unlock": {
+    "title": "Débloqué !",
+    "class": "Nouvelle classe : {{name}}",
+    "powers": "Nouveaux pouvoirs en récompense : {{names}}",
+    "condition": {
+      "scout": "Atteignez le niveau 4 d’un run pour la débloquer."
+    }
   }
 }
