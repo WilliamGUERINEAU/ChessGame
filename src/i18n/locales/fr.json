@@ -29,11 +29,11 @@
     },
     "hold-the-line": {
       "name": "Tenir la ligne",
-      "description": "Quatre ennemis fondent sur vous. Gardez votre héros en vie pendant 7 tours."
+      "description": "Quatre ennemis fondent sur vous. Gardez votre héros en vie pendant 5 tours."
     },
     "the-warden": {
       "name": "Le gardien",
-      "description": "Abattez la Tour gardienne (5 PV) avant la fin du 18ᵉ tour."
+      "description": "Abattez la Tour gardienne (5 PV) avant la fin du 12ᵉ tour."
     },
     "subtitle": "Rejouez chaque niveau avec une armée fixe, autant de fois que vous voulez."
   },
@@ -41,7 +41,8 @@
     "eliminate": "Capturez toutes les pièces ennemies",
     "survive": "Survivez {{rounds}} tours",
     "capture": "Capturez la cible",
-    "captureLimited": "Capturez la cible en {{rounds}} tours"
+    "captureLimited": "Capturez la cible en {{rounds}} tours",
+    "eliminateLimited": "Capturez toutes les pièces ennemies en {{rounds}} tours"
   },
   "game": {
     "round": "Tour {{round}}",
@@ -67,7 +68,9 @@
     "demoComplete": "Vous avez terminé la démo. Bravo !",
     "cornered": "Acculés, les ennemis passent à l’attaque !",
     "promotionLine": "Ligne de promotion",
-    "promotionRule": "un Pion avec Promotion qui l’atteint devient une Dame."
+    "promotionRule": "un Pion avec Promotion qui l’atteint devient une Dame.",
+    "momentum": "Élan : votre {{piece}} rejoue ! Agissez avec elle, ou terminez le tour.",
+    "endTurn": "Terminer le tour"
   },
   "end": {
     "won": "Victoire !",
@@ -122,7 +125,12 @@
     "pass": "Tour passé ({{side}})",
     "riposte": "Riposte : {{attacker}} → {{target}} : −{{damage}} PV",
     "shieldBlock": "Bouclier : {{piece}}",
-    "promote": "Promotion : {{piece}} devient Dame"
+    "promote": "Promotion : {{piece}} devient Dame",
+    "sweep": "Balayage : {{attacker}} → {{target}} : −{{damage}} PV",
+    "crush": "Écrasé contre l’obstacle : {{target}} : −{{damage}} PV",
+    "push": "Repoussé : {{piece}}",
+    "heal": "Vampirisme : {{piece}} +{{amount}} PV",
+    "momentum": "Élan : {{piece}} rejoue"
   },
   "a11y": {
     "board": "Plateau de jeu",
@@ -151,11 +159,11 @@
   "powers": {
     "vigor": {
       "name": "Vigueur",
-      "description": "+1 PV max."
+      "description": "+2 PV max."
     },
     "strength": {
       "name": "Force",
-      "description": "+1 ATK."
+      "description": "+1 ATK. Cumulable jusqu’à 3 fois."
     },
     "forester": {
       "name": "Forestier",
@@ -167,7 +175,7 @@
     },
     "reach": {
       "name": "Allonge",
-      "description": "Roi : jusqu’à 2 cases. Pion : une case de plus vers l’avant."
+      "description": "Roi : jusqu’à 3 cases. Pion : deux cases de plus vers l’avant."
     },
     "shield": {
       "name": "Bouclier",
@@ -175,7 +183,7 @@
     },
     "riposte": {
       "name": "Riposte",
-      "description": "Si elle survit à une attaque et que l’attaquant finit à côté, elle le frappe aussitôt."
+      "description": "Si elle survit à une attaque et peut atteindre l’attaquant, elle le frappe aussitôt, même à distance."
     },
     "promotion": {
       "name": "Promotion",
@@ -184,6 +192,22 @@
     "piercing": {
       "name": "Perçage",
       "description": "Ses glissades traversent la première pièce alliée rencontrée."
+    },
+    "momentum": {
+      "name": "Élan",
+      "description": "Après une capture, elle rejoue aussitôt (une fois par tour)."
+    },
+    "sweep": {
+      "name": "Balayage",
+      "description": "Ses attaques touchent aussi les ennemis autour de la cible (moitié des dégâts)."
+    },
+    "knockback": {
+      "name": "Repousser",
+      "description": "La cible qui survit recule d’une case ; contre un obstacle, elle subit 1 dégât."
+    },
+    "lifesteal": {
+      "name": "Vampirisme",
+      "description": "Regagne autant de PV que les dégâts qu’elle inflige."
     }
   },
   "run": {

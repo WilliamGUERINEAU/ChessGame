@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyAction } from '../apply'
+import { chooseAction } from '../ai/ai'
+import { legalActions } from '../moves'
 import type { Pos } from '../geometry'
 import type { Action } from '../moves'
 import { PIECES } from '../pieces/pieces'
@@ -15,9 +17,9 @@ const attack = (pieceId: string, x: number, y: number, landing?: Pos): Action =>
 const powers = (...list: PowerId[]) => ({ powers: list })
 
 describe('statistiques et règles d’attribution', () => {
-  it('Vigueur et Force s’ajoutent aux valeurs de base', () => {
+  it('Vigueur (+2 PV chacune) et Force s’ajoutent aux valeurs de base', () => {
     expect(statsFor('rook', ['vigor', 'vigor', 'strength'])).toEqual({
-      maxHp: PIECES.rook.hp + 2,
+      maxHp: PIECES.rook.hp + 4,
       atk: PIECES.rook.atk + 1,
     })
   })
@@ -25,8 +27,8 @@ describe('statistiques et règles d’attribution', () => {
   it('les pièces créées avec des pouvoirs en tiennent compte', () => {
     const state = testLevel({ terrain: ['...'], units: ['R.p'], stats: { '0,0': powers('vigor', 'shield') } })
     expect(findPiece(state, idAt(state, 0, 0))).toMatchObject({
-      maxHp: PIECES.rook.hp + 1,
-      hp: PIECES.rook.hp + 1,
+      maxHp: PIECES.rook.hp + 2,
+      hp: PIECES.rook.hp + 2,
       shieldActive: true,
       powers: ['vigor', 'shield'],
     })
@@ -37,7 +39,8 @@ describe('statistiques et règles d’attribution', () => {
     expect(canReceive('rook', [], 'promotion')).toBe(false)
     expect(canReceive('knight', [], 'skates')).toBe(false)
     expect(canReceive('king', [], 'reach')).toBe(true)
-    expect(canReceive('rook', ['strength', 'strength'], 'strength')).toBe(false)
+    expect(canReceive('rook', ['strength', 'strength'], 'strength')).toBe(true)
+    expect(canReceive('rook', ['strength', 'strength', 'strength'], 'strength')).toBe(false)
     expect(canReceive('rook', ['shield'], 'shield')).toBe(false)
     expect(powerCount(['vigor', 'shield', 'vigor'], 'vigor')).toBe(2)
   })
@@ -69,9 +72,9 @@ describe('Patins', () => {
 })
 
 describe('Allonge', () => {
-  it('le Roi se déplace jusqu’à 2 cases, en ligne', () => {
+  it('le Roi se déplace jusqu’à 3 cases, en ligne', () => {
     const state = testLevel({ terrain: ['.....', '.....', '.....'], units: ['....k', '', 'K....'], stats: { '0,2': powers('reach') } })
-    expect(moveKeys(state, idAt(state, 0, 2))).toEqual(['0,0', '0,1', '1,1', '1,2', '2,0', '2,2'])
+    expect(moveKeys(state, idAt(state, 0, 2))).toEqual(['0,0', '0,1', '1,1', '1,2', '2,0', '2,2', '3,2'])
   })
 
   it('le Roi attaque à 2 cases et s’arrête devant si la cible survit', () => {
@@ -81,14 +84,14 @@ describe('Allonge', () => {
     expect(where(applyAction(state, attack(king, 2, 0)).state, king)).toBe('1,0')
   })
 
-  it('le Pion avance d’une case de plus (3 au premier coup, 2 ensuite)', () => {
-    const column = ['...', '...', '...', '...', '...', '...']
-    let state = testLevel({ terrain: column, units: ['..k', '', '', '', '', '.P.'], stats: { '1,5': powers('reach') } })
-    const pawn = idAt(state, 1, 5)
-    expect(moveKeys(state, pawn)).toEqual(['1,2', '1,3', '1,4'])
-    state = applyAction(state, move(pawn, 1, 4)).state
+  it('le Pion avance de deux cases de plus (4 au premier coup, 3 ensuite)', () => {
+    const column = ['...', '...', '...', '...', '...', '...', '...', '...']
+    let state = testLevel({ terrain: column, units: ['..k', '', '', '', '', '', '', '.P.'], stats: { '1,7': powers('reach') } })
+    const pawn = idAt(state, 1, 7)
+    expect(moveKeys(state, pawn)).toEqual(['1,3', '1,4', '1,5', '1,6'])
+    state = applyAction(state, move(pawn, 1, 6)).state
     state = applyAction(state, move(idAt(state, 2, 0), 2, 1)).state
-    expect(moveKeys(state, pawn)).toEqual(['1,2', '1,3'])
+    expect(moveKeys(state, pawn)).toEqual(['1,3', '1,4', '1,5'])
   })
 })
 
@@ -163,8 +166,8 @@ describe('Promotion', () => {
     expect(findPiece(after, pawn)).toMatchObject({
       type: 'queen',
       powers: ['vigor'],
-      maxHp: PIECES.queen.hp + 1,
-      hp: PIECES.queen.hp + 1,
+      maxHp: PIECES.queen.hp + 2,
+      hp: PIECES.queen.hp + 2,
       atk: PIECES.queen.atk,
     })
   })
@@ -227,4 +230,143 @@ describe('Perçage', () => {
   function pieceMoves(state: ReturnType<typeof testLevel>) {
     return moveKeys(state, idAt(state, 0, 0))
   }
+})
+
+describe('Riposte à portée', () => {
+  it('frappe un attaquant resté à distance mais à sa portée (Cavalier contre Cavalier)', () => {
+    const state = testLevel({
+      terrain: ['...', '~~~', '#.#'],
+      units: ['N..', '', '.n.'],
+      stats: { '1,2': { hp: 3, maxHp: 3, powers: ['riposte'] } },
+    })
+    const knight = idAt(state, 0, 0)
+    const { state: after, events } = applyAction(state, attack(knight, 1, 2))
+    expect(events.map((e) => e.type)).toContain('riposte')
+    // Le Cavalier attaquant (2 PV) prend 2 dégâts : il est capturé par la riposte.
+    expect(findPiece(after, knight)).toBeUndefined()
+  })
+})
+
+describe('Élan', () => {
+  const level = () =>
+    testLevel({ terrain: ['.....', '.....', '.....'], units: ['R.p.p', '', '....p'], stats: { '0,0': powers('momentum') } })
+
+  it('après une capture, la même pièce rejoue, et elle seule', () => {
+    const state = level()
+    const rook = idAt(state, 0, 0)
+    const { state: after, events } = applyAction(state, attack(rook, 2, 0))
+    expect(events).toContainEqual({ type: 'momentum', pieceId: rook })
+    expect(after.sideToMove).toBe('player')
+    expect(after.bonusPieceId).toBe(rook)
+    expect(after.round).toBe(1)
+    const pieces = new Set(legalActions(after).flatMap((a) => (a.kind === 'pass' ? [] : [a.pieceId])))
+    expect([...pieces]).toEqual([rook])
+    expect(legalActions(after)).toContainEqual({ kind: 'pass' })
+  })
+
+  it('une seule action bonus par tour, puis la main passe à l’ennemi', () => {
+    const state = level()
+    const rook = idAt(state, 0, 0)
+    let after = applyAction(state, attack(rook, 2, 0)).state
+    // Deuxième capture pendant l'Élan : pas de nouvel Élan.
+    const second = applyAction(after, attack(rook, 4, 0))
+    expect(second.events.some((e) => e.type === 'capture')).toBe(true)
+    expect(second.events.some((e) => e.type === 'momentum')).toBe(false)
+    after = second.state
+    expect(after.sideToMove).toBe('enemy')
+    expect(after.bonusPieceId).toBeNull()
+  })
+
+  it('passer termine le tour sans compter comme un blocage', () => {
+    const after = applyAction(applyAction(level(), attack(idAt(level(), 0, 0), 2, 0)).state, { kind: 'pass' }).state
+    expect(after.sideToMove).toBe('enemy')
+    expect(after.consecutivePasses).toBe(0)
+  })
+})
+
+describe('Balayage', () => {
+  it('les ennemis voisins de la cible prennent la moitié des dégâts (arrondie au supérieur)', () => {
+    const state = testLevel({
+      terrain: ['....', '....', '....'],
+      units: ['Q.r.', '..rP', '...k'],
+      stats: { '0,0': powers('sweep') },
+    })
+    const queen = idAt(state, 0, 0)
+    const neighbour = idAt(state, 2, 1)
+    const { state: after, events } = applyAction(state, attack(queen, 2, 0))
+    expect(events).toContainEqual({ type: 'sweep', pieceId: queen, targetId: neighbour, damage: 2, targetHp: PIECES.rook.hp - 2 })
+    // Ni l'allié voisin, ni l'ennemi trop loin ne sont touchés.
+    expect(findPiece(after, idAt(state, 3, 1))?.hp).toBe(PIECES.pawn.hp)
+    expect(findPiece(after, idAt(state, 3, 2))?.hp).toBe(PIECES.king.hp)
+  })
+})
+
+describe('Repousser', () => {
+  it('une cible qui survit recule d’une case dans le sens de l’attaque', () => {
+    const state = testLevel({ terrain: ['......'], units: ['R..r..'], stats: { '0,0': powers('knockback') } })
+    const target = idAt(state, 3, 0)
+    const { state: after, events } = applyAction(state, attack(idAt(state, 0, 0), 3, 0))
+    expect(events).toContainEqual({ type: 'push', pieceId: target, from: { x: 3, y: 0 }, to: { x: 4, y: 0 } })
+    expect(where(after, target)).toBe('4,0')
+  })
+
+  it('bloquée (bord, eau, pièce), elle prend 1 dégât de plus', () => {
+    const state = testLevel({
+      terrain: ['....~'],
+      units: ['R..r'],
+      stats: { '0,0': powers('knockback'), '3,0': { hp: 5, maxHp: 5 } },
+    })
+    const target = idAt(state, 3, 0)
+    const { state: after, events } = applyAction(state, attack(idAt(state, 0, 0), 3, 0))
+    expect(events.some((e) => e.type === 'crush')).toBe(true)
+    expect(findPiece(after, target)?.hp).toBe(5 - PIECES.rook.atk - 1)
+  })
+
+  it('repoussée sur la glace, elle glisse', () => {
+    const state = testLevel({ terrain: ['....ii.'], units: ['R..r'], stats: { '0,0': powers('knockback') } })
+    const target = idAt(state, 3, 0)
+    expect(where(applyAction(state, attack(idAt(state, 0, 0), 3, 0)).state, target)).toBe('6,0')
+  })
+})
+
+describe('Vampirisme', () => {
+  it('chaque dégât infligé rend 1 PV, sans dépasser le maximum', () => {
+    const state = testLevel({
+      terrain: ['....'],
+      units: ['R..r'],
+      stats: { '0,0': { powers: ['lifesteal'], hp: 3, maxHp: 4 } },
+    })
+    const rook = idAt(state, 0, 0)
+    // 2 dégâts infligés, mais il ne manquait qu'1 PV.
+    const { state: after, events } = applyAction(state, attack(rook, 3, 0))
+    expect(events).toContainEqual({ type: 'heal', pieceId: rook, amount: 1, hp: 4 })
+    expect(findPiece(after, rook)?.hp).toBe(4)
+  })
+})
+
+describe('limite de tours en « tout capturer »', () => {
+  it('le niveau est perdu si la limite est dépassée', () => {
+    let state = testLevel({
+      terrain: ['....', '....', '....', '....'],
+      units: ['...k', '', '', 'K...'],
+      goal: { kind: 'eliminate', maxRounds: 1 },
+    })
+    state = applyAction(state, move(idAt(state, 0, 3), 1, 3)).state
+    state = applyAction(state, move(idAt(state, 3, 0), 3, 1)).state
+    expect(state.endReason).toBe('timeUp')
+  })
+})
+
+describe('IA et Élan', () => {
+  it('voit qu’une capture avec Élan permet d’enchaîner une seconde capture', () => {
+    // A : prendre le Pion (0,2) puis, en rejouant, le Cavalier (3,2) = 2 + 5.
+    // B : prendre le Fou (4,4), sans suite = 5. L'IA doit choisir A.
+    const state = testLevel({
+      terrain: ['.....', '.....', '.....', '.....', '.....'],
+      units: ['..K..', '', 'p..n.', '', 'R...b'],
+      hero: { x: 2, y: 0 },
+      stats: { '0,4': powers('momentum') },
+    })
+    expect(chooseAction(state, { depth: 2 })).toMatchObject({ kind: 'attack', target: { x: 0, y: 2 } })
+  })
 })

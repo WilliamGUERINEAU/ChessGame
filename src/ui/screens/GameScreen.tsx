@@ -47,10 +47,12 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
   const { state, selection, log, lastMove, hits, plies } = game.model
   const ended = state.status !== 'ongoing'
   const selected = selection.kind === 'none' ? undefined : findPiece(state, selection.pieceId)
+  const bonusPiece = game.bonusPieceId ? findPiece(state, game.bonusPieceId) : undefined
 
   let hint = ''
   if (!ended && !game.thinking) {
-    if (game.mustPass) hint = t('game.noMoves')
+    if (bonusPiece) hint = t('game.momentum', { piece: t(`pieces.${bonusPiece.type}`) })
+    else if (game.mustPass) hint = t('game.noMoves')
     else if (selection.kind === 'landing') hint = t('game.chooseLanding')
     else if (selection.kind === 'piece') hint = t('game.chooseTarget')
     else hint = t('game.selectPiece')
@@ -105,9 +107,9 @@ export function GameScreen({ levelId, levelNumber, setup, mode }: GameScreenProp
             </p>
             {hint && <p className="turn-hint">{hint}</p>}
             {!ended && enemiesCornered(state) && <p className="turn-alert">{t('game.cornered')}</p>}
-            {game.mustPass && (
+            {(game.mustPass || bonusPiece) && (
               <button type="button" className="button-primary" onClick={game.pass}>
-                {t('game.pass')}
+                {bonusPiece ? t('game.endTurn') : t('game.pass')}
               </button>
             )}
           </section>
@@ -248,7 +250,7 @@ function PieceCard({ piece, isHero, isTarget }: { piece: Piece; isHero: boolean;
 function goalLabel(goal: Goal, t: TFunction): string {
   switch (goal.kind) {
     case 'eliminate':
-      return t('goal.eliminate')
+      return goal.maxRounds ? t('goal.eliminateLimited', { rounds: goal.maxRounds }) : t('goal.eliminate')
     case 'survive':
       return t('goal.survive', { rounds: goal.rounds })
     case 'capture':
@@ -257,7 +259,7 @@ function goalLabel(goal: Goal, t: TFunction): string {
 }
 
 function roundLabel(goal: Goal, round: number, t: TFunction): string {
-  const limit = goal.kind === 'survive' ? goal.rounds : goal.kind === 'capture' ? goal.maxRounds : undefined
+  const limit = goal.kind === 'survive' ? goal.rounds : goal.maxRounds
   return limit
     ? t('game.roundOf', { round: Math.min(round, limit), total: limit })
     : t('game.round', { round })
@@ -267,13 +269,19 @@ function entrySide(entry: LogEntry): string {
   switch (entry.kind) {
     case 'attack':
     case 'riposte':
+    case 'sweep':
       return entry.attacker.side
     case 'capture':
+    case 'crush':
       return entry.target.side === 'player' ? 'enemy' : 'player'
     case 'iceSlide':
     case 'shieldBlock':
     case 'promote':
+    case 'momentum':
+    case 'heal':
       return entry.piece.side
+    case 'push':
+      return entry.piece.side === 'player' ? 'enemy' : 'player'
     case 'pass':
       return entry.side
   }
@@ -284,13 +292,20 @@ function describeEntry(entry: LogEntry, t: TFunction): string {
   switch (entry.kind) {
     case 'attack':
     case 'riposte':
+    case 'sweep':
       return t(`log.${entry.kind}`, { attacker: name(entry.attacker), target: name(entry.target), damage: entry.damage })
+    case 'crush':
+      return t('log.crush', { target: name(entry.target), damage: entry.damage })
     case 'capture':
       return t('log.capture', { target: name(entry.target) })
     case 'iceSlide':
     case 'shieldBlock':
     case 'promote':
+    case 'push':
+    case 'momentum':
       return t(`log.${entry.kind}`, { piece: name(entry.piece) })
+    case 'heal':
+      return t('log.heal', { piece: name(entry.piece), amount: entry.amount })
     case 'pass':
       return t('log.pass', { side: t(`sides.${entry.side}`) })
   }

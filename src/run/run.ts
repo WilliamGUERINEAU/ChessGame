@@ -69,6 +69,10 @@ const POWER_WEIGHTS: Readonly<Record<PowerId, number>> = {
   reach: 2,
   piercing: 2,
   promotion: 2,
+  momentum: 2,
+  sweep: 2,
+  knockback: 2,
+  lifesteal: 2,
 }
 
 export function startRun(classId: ClassId, seed: number, levelCount: number): RunState {

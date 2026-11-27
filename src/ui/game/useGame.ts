@@ -22,8 +22,9 @@ import {
 } from './interaction'
 
 /** Délai minimal avant le coup ennemi, pour que le joueur voie son propre coup. */
-const ENEMY_MIN_DELAY_MS = 550
+const ENEMY_MIN_DELAY_MS = 250
 const LOG_SIZE = 30
+const STRIKE_EVENTS: ReadonlySet<string> = new Set(['attack', 'riposte', 'sweep', 'crush'])
 
 /** Tout ce qu'il faut pour jouer un combat, en entraînement comme dans un run. */
 export interface BattleSetup {
@@ -72,12 +73,14 @@ function reducer(model: GameModel, message: Message): GameModel {
       const entries = logEntriesFor(model.state, events, model.plies * 100)
       return {
         state,
-        selection: NO_SELECTION,
+        // Élan du joueur : la pièce qui rejoue est déjà sélectionnée.
+        selection:
+          state.bonusPieceId && state.sideToMove === 'player'
+            ? { kind: 'piece', pieceId: state.bonusPieceId }
+            : NO_SELECTION,
         log: [...entries.reverse(), ...model.log].slice(0, LOG_SIZE),
         lastMove: lastMoveOf(events),
-        hits: events.flatMap((event) =>
-          event.type === 'attack' || event.type === 'riposte' ? [event.targetId] : [],
-        ),
+        hits: events.flatMap((event) => (STRIKE_EVENTS.has(event.type) && 'targetId' in event ? [event.targetId] : [])),
         plies: model.plies + 1,
       }
     }
@@ -91,6 +94,8 @@ export interface GameController {
   readonly thinking: boolean
   /** Le joueur n'a aucune action possible et doit passer. */
   readonly mustPass: boolean
+  /** Élan : pièce du joueur qui rejoue (il peut aussi terminer son tour). */
+  readonly bonusPieceId: string | null
   readonly clickCell: (pos: Pos) => void
   readonly pass: () => void
 }
@@ -143,6 +148,7 @@ export function useGame(setup: BattleSetup): GameController {
     highlights: highlightsFor(state, selection),
     thinking,
     mustPass,
+    bonusPieceId: !thinking && state.status === 'ongoing' ? state.bonusPieceId : null,
     clickCell,
     pass,
   }

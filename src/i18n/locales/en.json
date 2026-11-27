@@ -29,11 +29,11 @@
     },
     "hold-the-line": {
       "name": "Hold the line",
-      "description": "Four enemies are closing in. Keep your hero alive for 7 rounds."
+      "description": "Four enemies are closing in. Keep your hero alive for 5 rounds."
     },
     "the-warden": {
       "name": "The warden",
-      "description": "Take down the warden rook (5 HP) before the end of round 18."
+      "description": "Take down the warden rook (5 HP) before the end of round 12."
     },
     "subtitle": "Replay each level with a fixed army, as often as you like."
   },
@@ -41,7 +41,8 @@
     "eliminate": "Capture every enemy piece",
     "survive": "Survive {{rounds}} rounds",
     "capture": "Capture the target",
-    "captureLimited": "Capture the target within {{rounds}} rounds"
+    "captureLimited": "Capture the target within {{rounds}} rounds",
+    "eliminateLimited": "Capture every enemy piece within {{rounds}} rounds"
   },
   "game": {
     "round": "Round {{round}}",
@@ -67,7 +68,9 @@
     "demoComplete": "You finished the demo. Well done!",
     "cornered": "Cornered, the enemies go on the attack!",
     "promotionLine": "Promotion line",
-    "promotionRule": "a pawn with Promotion that reaches it becomes a queen."
+    "promotionRule": "a pawn with Promotion that reaches it becomes a queen.",
+    "momentum": "Momentum: your {{piece}} moves again! Act with it, or end the turn.",
+    "endTurn": "End turn"
   },
   "end": {
     "won": "Victory!",
@@ -122,7 +125,12 @@
     "pass": "Turn passed ({{side}})",
     "riposte": "Riposte: {{attacker}} → {{target}}: −{{damage}} HP",
     "shieldBlock": "Shield: {{piece}}",
-    "promote": "Promotion: {{piece}} becomes a queen"
+    "promote": "Promotion: {{piece}} becomes a queen",
+    "sweep": "Sweep: {{attacker}} → {{target}}: −{{damage}} HP",
+    "crush": "Crushed against an obstacle: {{target}}: −{{damage}} HP",
+    "push": "Knocked back: {{piece}}",
+    "heal": "Lifesteal: {{piece}} +{{amount}} HP",
+    "momentum": "Momentum: {{piece}} moves again"
   },
   "a11y": {
     "board": "Game board",
@@ -151,11 +159,11 @@
   "powers": {
     "vigor": {
       "name": "Vigor",
-      "description": "+1 max HP."
+      "description": "+2 max HP."
     },
     "strength": {
       "name": "Strength",
-      "description": "+1 ATK."
+      "description": "+1 ATK. Stacks up to 3 times."
     },
     "forester": {
       "name": "Woodland stride",
@@ -167,7 +175,7 @@
     },
     "reach": {
       "name": "Reach",
-      "description": "King: up to 2 squares. Pawn: one more square forward."
+      "description": "King: up to 3 squares. Pawn: two more squares forward."
     },
     "shield": {
       "name": "Shield",
@@ -175,7 +183,7 @@
     },
     "riposte": {
       "name": "Riposte",
-      "description": "If it survives an attack and the attacker ends next to it, it strikes back at once."
+      "description": "If it survives an attack and can reach the attacker, it strikes back at once, even at range."
     },
     "promotion": {
       "name": "Promotion",
@@ -184,6 +192,22 @@
     "piercing": {
       "name": "Piercing",
       "description": "Its slides pass through the first allied piece in the way."
+    },
+    "momentum": {
+      "name": "Momentum",
+      "description": "After a capture, it moves again at once (once per turn)."
+    },
+    "sweep": {
+      "name": "Sweep",
+      "description": "Its attacks also hit enemies around the target (half damage)."
+    },
+    "knockback": {
+      "name": "Knockback",
+      "description": "A surviving target is pushed back one square; against an obstacle, it takes 1 damage."
+    },
+    "lifesteal": {
+      "name": "Lifesteal",
+      "description": "Regains as much HP as the damage it deals."
     }
   },
   "run": {

@@ -91,3 +91,34 @@ describe('journal et dernier déplacement', () => {
     expect(lastMoveOf(events)).toEqual({ from: { x: 0, y: 0 }, to: { x: 3, y: 0 } })
   })
 })
+
+describe('journal des nouveaux pouvoirs', () => {
+  it('note balayage, vampirisme et élan', () => {
+    const state = testLevel({
+      terrain: ['....', '....'],
+      units: ['R.p.', '...p'],
+      stats: { '0,0': { powers: ['sweep', 'lifesteal', 'momentum'], hp: 1, maxHp: 4 }, '3,1': { hp: 3 } },
+    })
+    const { events } = applyAction(state, { kind: 'attack', pieceId: idAt(state, 0, 0), target: { x: 2, y: 0 } })
+    const kinds = logEntriesFor(state, events, 1).map((entry) => entry.kind)
+    expect(kinds).toEqual(expect.arrayContaining(['attack', 'capture', 'sweep', 'heal', 'momentum']))
+  })
+
+  it('note la poussée et l’écrasement', () => {
+    const pushed = testLevel({
+      terrain: ['....'],
+      units: ['R.n.'],
+      stats: { '0,0': { powers: ['knockback'] }, '2,0': { hp: 5 } },
+    })
+    const push = applyAction(pushed, { kind: 'attack', pieceId: idAt(pushed, 0, 0), target: { x: 2, y: 0 } })
+    expect(logEntriesFor(pushed, push.events, 1).map((entry) => entry.kind)).toContain('push')
+
+    const crushed = testLevel({
+      terrain: ['...'],
+      units: ['R.n'],
+      stats: { '0,0': { powers: ['knockback'] }, '2,0': { hp: 5 } },
+    })
+    const crush = applyAction(crushed, { kind: 'attack', pieceId: idAt(crushed, 0, 0), target: { x: 2, y: 0 } })
+    expect(logEntriesFor(crushed, crush.events, 1).map((entry) => entry.kind)).toContain('crush')
+  })
+})

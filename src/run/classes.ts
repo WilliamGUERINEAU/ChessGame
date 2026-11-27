@@ -17,10 +17,10 @@ export const CLASSES: Readonly<Record<ClassId, ClassDefinition>> = {
     hero: { type: 'king', powers: ['riposte'] },
     army: ['rook'],
   },
-  /** Chevalière : Cavalier (4 PV grâce à 2 Vigueur, 2 ATK) avec Bouclier, et un Fou. */
+  /** Chevalière : Cavalier (4 PV grâce à Vigueur, 2 ATK) avec Bouclier, et un Fou. */
   knightess: {
     id: 'knightess',
-    hero: { type: 'knight', powers: ['shield', 'vigor', 'vigor'] },
+    hero: { type: 'knight', powers: ['shield', 'vigor'] },
     army: ['bishop'],
   },
 }

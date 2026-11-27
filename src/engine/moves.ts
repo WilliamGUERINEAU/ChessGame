@@ -2,7 +2,7 @@ import { isStandable, terrainAt, TERRAIN_RULES } from './board/board'
 import { survivedApproach, wouldKill } from './combat/combat'
 import { add, DIRECTION_VECTORS, perpendiculars, samePos, type Pos, type Vec } from './geometry'
 import { PIECES, type Piece } from './pieces/pieces'
-import { hasPower } from './powers/powers'
+import { hasPower, REACH_BONUS } from './powers/powers'
 import { findPiece, pieceAt, type GameState } from './state'
 
 /**
@@ -22,9 +22,16 @@ export type Action =
     }
   | { readonly kind: 'pass' }
 
-/** Actions possibles du camp qui joue : `[pass]` s'il est bloqué, `[]` si la partie est finie. */
+/**
+ * Actions possibles du camp qui joue : `[pass]` s'il est bloqué, `[]` si la partie est finie.
+ * Pendant un Élan, seule la pièce qui rejoue peut agir, et `pass` termine le tour.
+ */
 export function legalActions(state: GameState): Action[] {
   if (state.status !== 'ongoing') return []
+  if (state.bonusPieceId) {
+    const bonus = findPiece(state, state.bonusPieceId)
+    return [...(bonus ? actionsFrom(state, bonus) : []), { kind: 'pass' }]
+  }
   const actions = state.pieces
     .filter((piece) => piece.side === state.sideToMove)
     .flatMap((piece) => actionsFrom(state, piece))
@@ -35,7 +42,13 @@ export function legalActions(state: GameState): Action[] {
 export function pieceActions(state: GameState, pieceId: string): Action[] {
   const piece = findPiece(state, pieceId)
   if (!piece || state.status !== 'ongoing' || piece.side !== state.sideToMove) return []
+  if (state.bonusPieceId && state.bonusPieceId !== pieceId) return []
   return actionsFrom(state, piece)
+}
+
+/** Pièces adverses qu'une pièce pourrait attaquer depuis sa case (quel que soit le camp qui joue). */
+export function attackTargetsOf(state: Pick<GameState, 'board' | 'pieces' | 'forward'>, piece: Piece): Piece[] {
+  return reach(state as GameState, piece).targets
 }
 
 export function sameAction(a: Action, b: Action): boolean {
@@ -80,8 +93,8 @@ function reach(state: GameState, piece: Piece): Reach {
   const movement = PIECES[piece.type].movement
   switch (movement.kind) {
     case 'slide': {
-      // Allonge : le Roi va jusqu'à 2 cases.
-      const range = movement.range + (piece.type === 'king' && hasPower(piece, 'reach') ? 1 : 0)
+      // Allonge : le Roi va plus loin.
+      const range = movement.range + (piece.type === 'king' && hasPower(piece, 'reach') ? REACH_BONUS : 0)
       return slideReach(state, piece, movement.vectors, range)
     }
     case 'leap':
@@ -157,7 +170,7 @@ function pawnReach(state: GameState, piece: Piece): Reach {
   const targets: Piece[] = []
   const forward = DIRECTION_VECTORS[state.forward[piece.side]]
   const forester = hasPower(piece, 'forester')
-  const maxSteps = 1 + (piece.hasMoved ? 0 : 1) + (hasPower(piece, 'reach') ? 1 : 0)
+  const maxSteps = 1 + (piece.hasMoved ? 0 : 1) + (hasPower(piece, 'reach') ? REACH_BONUS : 0)
 
   let current = piece.pos
   for (let step = 1; step <= maxSteps; step++) {

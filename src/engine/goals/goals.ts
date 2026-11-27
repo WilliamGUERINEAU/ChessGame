@@ -3,13 +3,13 @@ import type { GameState } from '../state'
 
 /** Objectif tel qu'écrit dans le contenu d'un niveau (la cible est désignée par sa case). */
 export type GoalDefinition =
-  | { readonly kind: 'eliminate' }
+  | { readonly kind: 'eliminate'; readonly maxRounds?: number }
   | { readonly kind: 'survive'; readonly rounds: number }
   | { readonly kind: 'capture'; readonly target: Pos; readonly maxRounds?: number }
 
 /** Objectif pendant la partie (la cible est désignée par son identifiant). */
 export type Goal =
-  | { readonly kind: 'eliminate' }
+  | { readonly kind: 'eliminate'; readonly maxRounds?: number }
   | { readonly kind: 'survive'; readonly rounds: number }
   | { readonly kind: 'capture'; readonly targetId: string; readonly maxRounds?: number }
 
@@ -54,6 +54,7 @@ export function evaluateOutcome(state: OutcomeInput): Outcome {
   switch (goal.kind) {
     case 'eliminate':
       if (!enemiesLeft) return won('allEliminated')
+      if (goal.maxRounds !== undefined && state.round > goal.maxRounds) return lost('timeUp')
       break
     case 'survive':
       if (!enemiesLeft) return won('allEliminated')

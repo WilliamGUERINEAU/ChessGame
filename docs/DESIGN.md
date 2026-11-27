@@ -23,7 +23,7 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
   | Classe | Héros | Pouvoirs du héros | Armée de départ |
   |---|---|---|---|
   | Souverain | Roi (4 PV, 1 ATK) | Riposte | Tour |
-  | Chevalière | Cavalier (4 PV, 2 ATK) | Bouclier, Vigueur ×2 | Fou |
+  | Chevalière | Cavalier (4 PV, 2 ATK) | Bouclier, Vigueur | Fou |
 
   On part avec **2 pièces** (héros compris) ; l'armée grandit avec les récompenses.
 - **Ennemis** ✅ : de plus en plus nombreux au fil du run : 2, puis 3, 3, 4 et 4
@@ -86,9 +86,9 @@ nouvelle pièce ou un pouvoir pour une pièce qu'il possède.
 ### Objectifs ✅
 | Type | Victoire | Précisions |
 |---|---|---|
-| Combat | Capturer **toutes** les pièces adverses. | |
-| Survie | Tenir **N tours** avec le héros vivant. | Un tour est fini quand l'ennemi a joué. Gagné aussi si plus aucun ennemi ne reste. |
-| Capture | Capturer **une pièce cible** précise. | Limite de tours facultative : le joueur dispose alors de N coups. |
+| Combat | Capturer **toutes** les pièces adverses. | Limite de tours facultative (défaite « temps écoulé ») : 10 à 16 tours dans la démo. |
+| Survie | Tenir **N tours** avec le héros vivant (5 dans la démo). | Un tour est fini quand l'ennemi a joué. Gagné aussi si plus aucun ennemi ne reste. |
+| Capture | Capturer **une pièce cible** précise. | Limite de tours facultative : le joueur dispose alors de N coups (12 pour la Gardienne). |
 | Boss | Vaincre un ennemi à beaucoup de PV (il peut jouer deux fois par tour). | PV personnalisables ✅ ; double action à implémenter. |
 
 ## 4. Règles de jeu
@@ -137,15 +137,28 @@ Gagnés en récompense (ou portés par le héros dès le départ), conservés to
 
 | Pouvoir | Effet | Pièces | Max |
 |---|---|---|---|
-| Vigueur | +1 PV max | toutes | 3 |
-| Force | +1 ATK | toutes | 2 |
+| Vigueur | +2 PV max | toutes | 3 |
+| Force | +1 ATK | toutes | 3 |
 | Forestier | La forêt n'arrête plus ses glissades (ni le double pas du Pion) | Dame, Tour, Fou, Pion | 1 |
 | Patins | Ne glisse pas sur la glace | toutes sauf Cavalier | 1 |
-| Allonge | Roi : se déplace et attaque jusqu'à 2 cases. Pion : une case de plus vers l'avant (3 au premier coup) | Roi, Pion | 1 |
+| Allonge | Roi : se déplace et attaque jusqu'à 3 cases. Pion : deux cases de plus vers l'avant (4 au premier coup) | Roi, Pion | 1 |
 | Bouclier | La première attaque reçue à chaque niveau ne fait aucun dégât (riposte comprise) | toutes | 1 |
-| Riposte | Si la pièce survit à une attaque et que l'attaquant finit sur une case voisine, elle le frappe aussitôt (sans riposte en retour) | toutes | 1 |
+| Riposte | Si la pièce survit à une attaque et peut atteindre l'attaquant là où il a fini (même à distance), elle le frappe aussitôt (sans riposte en retour) | toutes | 1 |
 | Promotion | Un Pion qui atteint la dernière rangée (plus aucune case devant lui dans sa colonne) devient une Dame **pour tout le run** ; ses PV montent d'autant que son maximum | Pion | 1 |
 | Perçage | Ses glissades traversent la première pièce alliée (pas si elle se tient dans une forêt qui l'arrêterait). Si cet allié est juste devant une cible qui survit, l'attaquant reste sur place | Dame, Tour, Fou | 1 |
+| Élan | Après une capture, la pièce **rejoue aussitôt** (elle seule ; « Terminer le tour » pour s'arrêter). Une fois par tour : une capture pendant l'Élan n'en redonne pas | toutes | 1 |
+| Balayage | Chaque attaque inflige aussi la moitié de l'ATK (arrondie au-dessus) aux ennemis voisins de la cible | toutes | 1 |
+| Repousser | Une cible qui survit recule d'une case dans l'axe de l'attaque (et glisse sur la glace) ; si la case est bloquée, elle est **écrasée** : 1 dégât | toutes | 1 |
+| Vampirisme | Regagne autant de PV que les dégâts infligés (balayage compris), sans dépasser son maximum | toutes | 1 |
+
+Ordre de résolution d'une attaque : coup → balayage → déplacement de l'attaquant →
+poussée (ou écrasement) → riposte → promotion → Élan.
+
+### Rythme ✅
+- L'ennemi joue au plus tôt **0,25 s** après le coup du joueur ; animations de
+  déplacement de 160 ms, flash de dégâts de 400 ms.
+- Tous les niveaux de combat ont une **limite de tours** ; le lac gelé oppose un
+  Cavalier (au lieu d'une Tour, trop fuyante) et deux Pions.
 
 ## 5. IA ennemie ✅
 - Recherche **minimax avec élagage alpha-bêta** (`src/engine/ai/`), calculée dans un

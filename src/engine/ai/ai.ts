@@ -111,7 +111,7 @@ export function rankActions(state: GameState, options: AiOptions = {}): RankedAc
   if (actions.length <= 1) return actions.map((action) => ({ action, score: 0 }))
   const ranked = actions.map((action) => ({
     action,
-    score: -negamax(resolveAction(state, action).state, depth - 1, -Infinity, Infinity, 1, weights),
+    score: childScore(state, resolveAction(state, action).state, depth - 1, -Infinity, Infinity, 1, weights),
   }))
   // Tri stable : à score égal, l'ordre de génération est conservé.
   return ranked.sort((a, b) => b.score - a.score)
@@ -130,12 +130,30 @@ function negamax(
   let best = -Infinity
   for (const action of orderActions(legalActions(state))) {
     const child = resolveAction(state, action).state
-    const score = -negamax(child, depth - 1, -beta, -alpha, ply + 1, weights)
+    const score = childScore(state, child, depth - 1, alpha, beta, ply + 1, weights)
     if (score > best) best = score
     if (best > alpha) alpha = best
     if (alpha >= beta) break
   }
   return best
+}
+
+/**
+ * Valeur d'un état enfant pour le camp qui joue dans `parent`. Normalement l'autre
+ * camp joue ensuite (on inverse) ; avec l'Élan, c'est le même camp qui rejoue.
+ */
+function childScore(
+  parent: GameState,
+  child: GameState,
+  depth: number,
+  alpha: number,
+  beta: number,
+  ply: number,
+  weights: Weights,
+): number {
+  return child.sideToMove === parent.sideToMove
+    ? negamax(child, depth, alpha, beta, ply, weights)
+    : -negamax(child, depth, -beta, -alpha, ply, weights)
 }
 
 /** Les attaques d'abord : l'élagage alpha-bêta en est plus efficace. */

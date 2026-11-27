@@ -493,7 +493,7 @@ summary:focus-visible {
 /* ---------- Plateau : pièces ---------- */
 
 .piece {
-  transition: transform 260ms ease;
+  transition: transform 160ms ease;
 }
 
 .glyph > * {
@@ -589,7 +589,7 @@ summary:focus-visible {
 .hit-flash {
   fill: var(--mark-attack);
   opacity: 0;
-  animation: hit-flash 650ms ease-out;
+  animation: hit-flash 400ms ease-out;
 }
 
 @keyframes hit-flash {

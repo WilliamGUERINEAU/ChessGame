@@ -52,6 +52,8 @@ export interface GameState {
   readonly consecutivePasses: number
   /** Actions jouées depuis la dernière attaque (riposte comprise), tous camps confondus. */
   readonly quietPlies: number
+  /** Élan : pièce qui rejoue immédiatement (seule à pouvoir agir, ou passer pour finir le tour). */
+  readonly bonusPieceId: string | null
   readonly status: Status
   readonly endReason: EndReason | null
 }
@@ -130,6 +132,9 @@ export function createLevel(def: LevelDefinition): GameState {
   let goal: Goal
   switch (def.goal.kind) {
     case 'eliminate':
+      if (def.goal.maxRounds !== undefined && !isPositiveInteger(def.goal.maxRounds)) {
+        throw new Error(`Limite de tours invalide : ${def.goal.maxRounds}`)
+      }
       goal = def.goal
       break
     case 'survive':
@@ -164,6 +169,7 @@ export function createLevel(def: LevelDefinition): GameState {
     round: 1,
     consecutivePasses: 0,
     quietPlies: 0,
+    bonusPieceId: null,
   }
   const outcome = evaluateOutcome(draft)
   return { ...draft, status: outcome.status, endReason: outcome.reason }

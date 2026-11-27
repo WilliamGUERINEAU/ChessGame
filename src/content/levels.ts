@@ -94,7 +94,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     ],
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
-    goal: { kind: 'eliminate' },
+    goal: { kind: 'eliminate', maxRounds: 10 },
     // Niveau d'introduction : l'ennemi ne voit qu'un coup (le joueur gagne même en jouant à courte vue).
     aiDepth: 1,
   }),
@@ -126,7 +126,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     ],
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
-    goal: { kind: 'eliminate' },
+    goal: { kind: 'eliminate', maxRounds: 16 },
     aiDepth: 2,
   }),
 
@@ -144,7 +144,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
       '.........',
     ],
     units: [
-      '........r',
+      '........n',
       '.p.....p.',
       '',
       '',
@@ -157,7 +157,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     ],
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
-    goal: { kind: 'eliminate' },
+    goal: { kind: 'eliminate', maxRounds: 16 },
     // Plus agressifs : sur la glace, des ennemis prudents tournent en rond.
     aiAggression: 1,
   }),
@@ -189,7 +189,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     ],
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
-    goal: { kind: 'survive', rounds: 7 },
+    goal: { kind: 'survive', rounds: 5 },
   }),
 
   level('the-warden', {
@@ -219,7 +219,7 @@ export const DEMO_LEVELS: readonly LevelContent[] = [
     ],
     deployment: ['', '', '', '', '', '', '', '', '   xxx', '   xxx'],
     hero: { x: 4, y: 9 },
-    goal: { kind: 'capture', target: { x: 1, y: 0 }, maxRounds: 18 },
+    goal: { kind: 'capture', target: { x: 1, y: 0 }, maxRounds: 12 },
     stats: { '1,0': { id: 'warden', hp: 5 } },
   }),
 ]

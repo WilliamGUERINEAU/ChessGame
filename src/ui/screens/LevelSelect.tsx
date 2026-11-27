@@ -38,7 +38,7 @@ export function LevelSelect({ onBack, onPlay }: LevelSelectProps) {
 function goalSummary(goal: GoalDefinition, t: TFunction): string {
   switch (goal.kind) {
     case 'eliminate':
-      return t('goal.eliminate')
+      return goal.maxRounds ? t('goal.eliminateLimited', { rounds: goal.maxRounds }) : t('goal.eliminate')
     case 'survive':
       return t('goal.survive', { rounds: goal.rounds })
     case 'capture':
