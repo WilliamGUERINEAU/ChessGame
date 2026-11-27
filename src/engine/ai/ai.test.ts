@@ -213,3 +213,21 @@ describe('IA : interception et horloge', () => {
     expect(Math.max(...scores)).toBeLessThan(1000)
   })
 })
+
+describe('IA : dernier ennemi', () => {
+  it('blessé et seul, il frappe le héros au lieu de fuir (sa mort ne lui fait plus peur)', () => {
+    // La Tour ennemie (1 PV) peut frapper le Roi en ligne ; elle sera prise ensuite.
+    const state = testLevel({
+      terrain: ['.....', '.....', '.....'],
+      units: ['K...r', '.....', 'R....'],
+      hero: { x: 0, y: 0 },
+      goal: { kind: 'eliminate', maxRounds: 20 },
+      stats: { '4,0': { hp: 1, maxHp: 3 } },
+    })
+    const enemyTurn = { ...state, sideToMove: 'enemy' as const }
+    expect(chooseAction(enemyTurn, { depth: 3, aggression: 1, boldness: 0.3 })).toMatchObject({
+      kind: 'attack',
+      target: { x: 0, y: 0 },
+    })
+  })
+})

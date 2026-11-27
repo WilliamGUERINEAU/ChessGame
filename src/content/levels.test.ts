@@ -19,9 +19,9 @@ import fr from '../i18n/locales/fr.json'
 
 /**
  * Partie IA contre IA : l'ennemi joue avec les réglages du niveau, le joueur est
- * simulé par une IA qui anticipe 4 demi-coups et vient au contact (un humain attentif fait mieux).
+ * simulé par une IA qui anticipe `depth` demi-coups et vient au contact (un humain attentif fait mieux).
  */
-function selfPlay(level: LevelContent, seed: number, maxPlies = 120) {
+function selfPlay(level: LevelContent, seed: number, depth: number, maxPlies = 120) {
   let state = createLevel(level.definition)
   const rng = createRng(seed)
   const survive = level.definition.goal.kind === 'survive'
@@ -32,7 +32,7 @@ function selfPlay(level: LevelContent, seed: number, maxPlies = 120) {
       enemy
         ? { depth: level.aiDepth, aggression: level.aiAggression, boldness: level.aiBoldness, rng }
         : // En survie, le joueur simulé garde son héros en retrait.
-          { depth: 4, rng, playerApproach: survive ? 0.3 : 2, heroApproach: survive ? 0 : 0.5 },
+          { depth, rng, playerApproach: survive ? 0.3 : 2, heroApproach: survive ? 0 : 0.5 },
     )
     state = applyAction(state, action).state
   }
@@ -142,12 +142,16 @@ describe('niveaux de démonstration', () => {
   )
 
   it.each(DEMO_LEVELS.map((level) => [level.id, level] as const))(
-    '%s : est gagnable (au moins une victoire du joueur simulé sur 10 graines)',
+    '%s : est gagnable (au moins une victoire du joueur simulé, à 3 ou 4 demi-coups, sur 10 graines)',
     (_id, level) => {
+      // Le joueur simulé n'est qu'une approximation : plus prudent à 4 demi-coups, il
+      // gagne parfois moins qu'à 3. On retient la meilleure des deux forces.
       let won = false
-      for (let seed = 1; seed <= 10 && !won; seed++) won = selfPlay(level, seed).status === 'won'
+      for (const depth of [4, 3]) {
+        for (let seed = 1; seed <= 10 && !won; seed++) won = selfPlay(level, seed, depth).status === 'won'
+      }
       expect(won).toBe(true)
     },
-    30_000,
+    60_000,
   )
 })

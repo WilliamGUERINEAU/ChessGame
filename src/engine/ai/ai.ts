@@ -2,7 +2,7 @@ import { resolveAction } from '../apply'
 import { isStandable, type Board } from '../board/board'
 import { add, ALL_DIRECTIONS, type Pos } from '../geometry'
 import { legalActions, type Action } from '../moves'
-import { PIECES, type PieceType } from '../pieces/pieces'
+import { PIECES, type Piece, type PieceType } from '../pieces/pieces'
 import type { Rng } from '../rng'
 import type { GameState } from '../state'
 
@@ -107,6 +107,18 @@ interface Weights {
    * jouer la montre (le joueur simulé, lui, la redoute).
    */
   readonly ignoreClock: boolean
+  /**
+   * Bonus d'approche de chaque pièce ennemie au début de la recherche. Une pièce qui
+   * meurt pendant la recherche le garde : sinon, plus elle est proche du héros, plus
+   * sa mort coûte cher, et un ennemi blessé rôde autour du héros sans jamais frapper.
+   */
+  readonly fallenApproach: ReadonlyMap<string, number>
+  /**
+   * Ennemis acculés : leur élimination n'est pas une défaite à fuir à tout prix. Sinon
+   * le dernier ennemi, dont la mort fait gagner le joueur, esquive indéfiniment au
+   * lieu de frapper ; « rien à perdre », il cherche au contraire à faire mal.
+   */
+  readonly nothingToLose: boolean
 }
 
 /**
@@ -130,13 +142,19 @@ export interface RankedAction {
 /** Toutes les actions légales, de la meilleure à la moins bonne selon l'IA. */
 export function rankActions(state: GameState, options: AiOptions = {}): RankedAction[] {
   const depth = Math.max(1, options.depth ?? DEFAULT_AI_DEPTH)
-  const weights: Weights = {
+  let weights: Weights = {
     enemyApproach: effectiveAggression(state, options.aggression ?? DEFAULT_AGGRESSION),
     playerApproach: options.playerApproach ?? PLAYER_APPROACH,
     heroApproach: options.heroApproach ?? 0,
     enemySelfValue: 1 - effectiveBoldness(state, options.boldness ?? 0),
     ignoreClock: state.sideToMove === 'enemy',
+    fallenApproach: new Map(),
+    nothingToLose: state.sideToMove === 'enemy' && enemiesCornered(state),
   }
+  const rootApproach = new Map(
+    state.pieces.filter((piece) => piece.side === 'enemy').map((piece) => [piece.id, enemyApproachValue(state, piece, weights)]),
+  )
+  weights = { ...weights, fallenApproach: rootApproach }
   const actions = orderActions(legalActions(state))
   if (actions.length <= 1) return actions.map((action) => ({ action, score: 0 }))
   const ranked = actions.map((action) => ({
@@ -204,7 +222,9 @@ function evaluate(state: GameState, ply: number, weights: Weights): number {
  */
 function evaluateForEnemy(state: GameState, ply: number, weights: Weights): number {
   const position = positionForEnemy(state, weights)
-  if (state.status === 'won') return -WIN_SCORE + ply * PLY_COST + position
+  if (state.status === 'won' && !(weights.nothingToLose && state.endReason === 'allEliminated')) {
+    return -WIN_SCORE + ply * PLY_COST + position
+  }
   if (state.status === 'lost' && !(weights.ignoreClock && state.endReason === 'timeUp')) {
     return WIN_SCORE - ply * PLY_COST + position
   }
@@ -213,7 +233,6 @@ function evaluateForEnemy(state: GameState, ply: number, weights: Weights): numb
 
 /** Matériel, PV et approche, du point de vue de l'ennemi. */
 function positionForEnemy(state: GameState, weights: Weights): number {
-  const hero = state.pieces.find((piece) => piece.id === state.heroId)
   const targetId = state.goal.kind === 'capture' ? state.goal.targetId : null
   const enemies = state.pieces.filter((piece) => piece.side === 'enemy')
   const objectives = targetId ? enemies.filter((piece) => piece.id === targetId) : enemies
@@ -236,21 +255,35 @@ function positionForEnemy(state: GameState, weights: Weights): number {
   // pièce lointaine « améliorerait » la position de son camp).
   const board = state.board
   const reach = board.width + board.height
-  const exits = state.goal.kind === 'intercept' ? state.goal.exits : null
   for (const piece of state.pieces) {
-    if (piece.side === 'enemy' && exits) {
-      // Interception : les ennemis courent vers la sortie la plus proche.
-      const nearest = Math.min(...exits.map((exit) => walkDistance(board, exit, piece.pos)))
-      score += EXIT_APPROACH * Math.max(0, reach - nearest)
-    } else if (piece.side === 'enemy' && hero && piece.id !== targetId) {
-      score += weights.enemyApproach * Math.max(0, reach - walkDistance(board, hero.pos, piece.pos))
-    } else if (piece.side === 'player' && objectives.length > 0) {
+    if (piece.side === 'enemy') {
+      score += enemyApproachValue(state, piece, weights)
+    } else if (objectives.length > 0) {
       const weight = piece.id === state.heroId ? weights.heroApproach : weights.playerApproach
       const nearest = Math.min(...objectives.map((o) => walkDistance(board, o.pos, piece.pos)))
       score -= weight * Math.max(0, reach - nearest)
     }
   }
+  // Une pièce ennemie tombée pendant la recherche garde son bonus d'approche initial.
+  for (const [id, credit] of weights.fallenApproach) {
+    if (!state.pieces.some((piece) => piece.id === id)) score += credit
+  }
   return score
+}
+
+/** Bonus d'approche d'une pièce ennemie : vers la sortie (interception) ou vers le héros. */
+function enemyApproachValue(state: GameState, piece: Piece, weights: Weights): number {
+  const board = state.board
+  const reach = board.width + board.height
+  if (state.goal.kind === 'intercept') {
+    // Interception : les ennemis courent vers la sortie la plus proche.
+    const nearest = Math.min(...state.goal.exits.map((exit) => walkDistance(board, exit, piece.pos)))
+    return EXIT_APPROACH * Math.max(0, reach - nearest)
+  }
+  const hero = state.pieces.find((candidate) => candidate.id === state.heroId)
+  const targetId = state.goal.kind === 'capture' ? state.goal.targetId : null
+  if (!hero || piece.id === targetId) return 0
+  return weights.enemyApproach * Math.max(0, reach - walkDistance(board, hero.pos, piece.pos))
 }
 
 /**

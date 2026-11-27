@@ -209,6 +209,13 @@ poussée (ou écrasement) → riposte → promotion → Élan.
   écoulé » du joueur comme une victoire ; elle cherche à blesser le héros jusqu'au
   bout. Constat de l'audit : avant, presque toutes les défaites hors survie venaient
   du temps, héros intact.
+- **Rien à perdre** ✅ : acculés, les ennemis ne comptent plus leur propre élimination
+  comme une défaite à fuir. Sans cela, le dernier ennemi (dont la mort fait gagner le
+  joueur) esquivait indéfiniment, même blessé et le héros en ligne de mire : une Tour
+  seule à 1 PV sur le Lac gelé faisait perdre au temps 12 parties simulées sur 12 ;
+  désormais elle frappe et le joueur gagne en 3 à 4 tours.
+- Une pièce ennemie qui tombe pendant la recherche garde son bonus d'approche
+  initial : mourir en frappant ne lui coûte que sa valeur de pièce.
 - **Interception** : les ennemis visent la sortie la plus proche (distance de marche).
 - Les égalités sont départagées par le générateur à graine.
 - Difficulté croissante : profondeur 1 au niveau 1, 2 au niveau 2, 3 ensuite.
